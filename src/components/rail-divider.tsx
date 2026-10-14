@@ -2,12 +2,9 @@
 // küçük bir Shinkansen soldan yavaşça gelir, rayı geçer ve sağdan çıkıp gider. Sadece bir kez.
 // Sadece süs: ekran okuyucu (VoiceOver) bunu atlar.
 import { SymbolView } from 'expo-symbols';
-import { createContext, useContext } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
-  measure,
-  type SharedValue,
   useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
@@ -16,46 +13,33 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useSeenOnScreen } from '@/hooks/use-seen-on-screen';
+
 const RED = '#C8102E';
 const RAIL = '#4A4A4A'; // Ray çizgileri: koyu gri
 const SLEEPER = '#8A847C'; // Traversler: biraz daha açık gri, ray öne çıksın
 const TRAIN_WIDTH = 66; // 3 vagon × 22pt
 const CROSS_DURATION = 6000; // Trenin rayı baştan sona geçmesi (ms): yavaş
 const SLEEPERS = 40; // Traversler: fazlası taşar ve gizlenir, her genişlikte ray dolu görünür
-const BOTTOM_MARGIN = 100; // Sekme çubuğunun arkası "görünür" sayılmasın
-
-// Sayfanın ne kadar kaydırıldığı. Rayın içinde olduğu ScrollView bunu sağlar (bkz. şehir sayfası).
-// Context: değeri aradaki bileşenlere props olarak geçirmeden derindeki bileşene ulaştırır (webdeki React ile aynı).
-export const ScrollOffsetContext = createContext<SharedValue<number> | null>(null);
 
 export function RailDivider() {
   // Hareketi Azalt açıksa tren hiç çıkmaz; sadece ray görünür
   const reduceMotion = useReducedMotion();
-  const scrollOffset = useContext(ScrollOffsetContext);
-  const { height: screenHeight } = useWindowDimensions();
   // Rayın ekrandaki yerini ölçmek için (webdeki useRef + getBoundingClientRect gibi)
   const ref = useAnimatedRef<Animated.View>();
+  const { seen, onLayout } = useSeenOnScreen(ref);
   // Rayın genişliği: ekrana çizilince ölçülür (onLayout). Tren bu mesafeyi kat edecek.
   const width = useSharedValue(0);
   // 0 = tren rayın solunda (görünmez), 1 = rayın sağında (görünmez): arada rayı geçer
   const progress = useSharedValue(0);
-  const started = useSharedValue(false);
 
-  // Sayfa her kaydırıldığında (ve ray ilk çizildiğinde) çalışır, UI thread'de: kaydırma takılmaz.
-  // Ray ekranın görünen kısmına girdiyse treni bir kez yola çıkar.
-  // Kaydıran bir sayfa yoksa (Context boş) ya da Hareketi Azalt açıksa tren hiç çıkmaz.
+  // Ray ekrana girince treni bir kez yola çıkar
   useAnimatedReaction(
-    () => [scrollOffset?.value ?? 0, width.value],
-    () => {
-      if (reduceMotion || !scrollOffset || started.value || width.value === 0) return;
-      const box = measure(ref); // Rayın ekrandaki konumu; henüz çizilmediyse null
-      if (!box) return;
-      const visible = box.pageY > 0 && box.pageY + box.height < screenHeight - BOTTOM_MARGIN;
-      if (visible) {
-        started.value = true;
-        // Easing.inOut: yavaş kalkar, hızlanır, çıkarken yine yavaşlar. Gerçek bir tren gibi.
-        progress.value = withTiming(1, { duration: CROSS_DURATION, easing: Easing.inOut(Easing.quad) });
-      }
+    () => seen.value,
+    (isSeen, wasSeen) => {
+      if (!isSeen || wasSeen || reduceMotion) return;
+      // Easing.inOut: yavaş kalkar, hızlanır, çıkarken yine yavaşlar. Gerçek bir tren gibi.
+      progress.value = withTiming(1, { duration: CROSS_DURATION, easing: Easing.inOut(Easing.quad) });
     },
   );
 
@@ -71,7 +55,10 @@ export function RailDivider() {
       ref={ref}
       style={styles.container}
       // .set(): React Compiler'a "bu değeri bilerek değiştiriyorum" demenin yolu (.value = yerine)
-      onLayout={(e) => width.set(e.nativeEvent.layout.width)}
+      onLayout={(e) => {
+        width.set(e.nativeEvent.layout.width);
+        onLayout(); // Ray çizilince de "ekranda mı?" kontrolü yapılsın
+      }}
       accessibilityElementsHidden // iOS: VoiceOver atlasın
       importantForAccessibility="no-hide-descendants" // Android: TalkBack atlasın
     >

@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ItemBadge } from '@/components/item-badge';
+import { LightBulb } from '@/components/light-bulb';
 import { PhotoCredit } from '@/components/photo-credit';
 import { RailDivider } from '@/components/rail-divider';
 import { serifText } from '@/constants/fonts';
@@ -222,7 +223,8 @@ export function TipList({ tips }: { tips: string[] }) {
     <View style={styles.card}>
       {tips.map((tip, i) => (
         <View key={tip} style={[styles.tip, i > 0 && styles.divider]}>
-          <SymbolView name={{ ios: 'lightbulb', android: 'lightbulb' }} size={16} tintColor={RED} />
+          {/* Bölüm ekrana girince ampuller yukarıdan aşağıya sırayla yanar */}
+          <LightBulb index={i} />
           <Text style={[styles.body, styles.tipText]}>{tip}</Text>
         </View>
       ))}
