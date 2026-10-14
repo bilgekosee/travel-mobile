@@ -2,7 +2,7 @@
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { SymbolView, SymbolViewProps } from 'expo-symbols';
-import { ReactNode, useState } from 'react';
+import { Fragment, ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   FadeIn,
@@ -14,8 +14,10 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { PhotoCredit } from '@/components/photo-credit';
+import { RailDivider } from '@/components/rail-divider';
 import { serifText } from '@/constants/fonts';
 import { CityGuide, Food } from '@/data/city-guides';
+import type { Shop } from '@/data/shops';
 
 const RED = '#C8102E';
 
@@ -176,6 +178,46 @@ function FoodItem({ food, first }: { food: Food; first: boolean }) {
   );
 }
 
+// Alışveriş noktaları: her birinde ne alınır (etiketler) ve oraya nasıl gidilir (tren ikonuyla).
+export function ShopList({ shops }: { shops: Shop[] }) {
+  return (
+    <View style={styles.card}>
+      {shops.map((shop, i) => (
+        // Fragment: ray + dükkanı fazladan bir kutu eklemeden birlikte döndürür (webdeki React ile aynı)
+        <Fragment key={shop.id}>
+          {/* İnce çizgi yerine tren yolu: dükkanlar birer istasyon gibi */}
+          {i > 0 && <RailDivider />}
+          <View style={styles.shop}>
+            <View style={styles.foodHeader}>
+              <Text style={styles.foodName}>{shop.name}</Text>
+              <Text style={styles.foodJapanese}>{shop.japaneseName}</Text>
+            </View>
+            <Text style={styles.body}>{shop.summary}</Text>
+            <View style={styles.ingredients}>
+              {shop.items.map((item) => (
+                <Text key={item} style={styles.ingredient}>
+                  {item}
+                </Text>
+              ))}
+            </View>
+            <View style={styles.access}>
+              <SymbolView name={{ ios: 'tram.fill', android: 'train' }} size={15} tintColor={RED} style={styles.factIcon} />
+              <Text style={[styles.body, styles.tipText]}>{shop.access}</Text>
+            </View>
+            {/* Harita sekmesini açar, haritayı bu dükkana yaklaştırır ve kartını gösterir */}
+            <Link href={{ pathname: '/map', params: { focus: `shop-${shop.id}` } }} asChild>
+              <Pressable style={styles.mapLink} hitSlop={12} accessibilityRole="link">
+                <SymbolView name={{ ios: 'map', android: 'map' }} size={15} tintColor={RED} />
+                <Text style={styles.mapLinkText}>Haritada göster</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </Fragment>
+      ))}
+    </View>
+  );
+}
+
 export function TipList({ tips }: { tips: string[] }) {
   return (
     <View style={styles.card}>
@@ -243,6 +285,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     overflow: 'hidden',
   },
+
+  shop: { gap: 8 },
+  access: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  mapLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }, // alignSelf: sadece yazı kadar yer kaplasın
+  mapLinkText: { fontSize: 15, fontWeight: '600', color: RED },
 
   tip: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   tipText: { flex: 1 },
