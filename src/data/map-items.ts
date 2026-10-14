@@ -2,7 +2,7 @@
 // aynı şekle çevrilmiş halde kullanıyor; "kind" alanı hangisi olduğunu söylüyor.
 import { type City, type Coordinates, PLACES } from '@/data/places';
 import { RESTAURANTS } from '@/data/restaurants';
-import { SHOPS } from '@/data/shops';
+import { SHOPS, type ShopItem } from '@/data/shops';
 
 export type MapItem = {
   id: string; // Haritada benzersiz anahtar
@@ -14,7 +14,7 @@ export type MapItem = {
   label: string; // Kartta küçük etiket: "Tapınak", "Ramen"…
   summary: string;
   coordinates: Coordinates;
-  items?: string[]; // ? = isteğe bağlı: sadece dükkanlarda var (ne alınır)
+  items?: ShopItem[]; // ? = isteğe bağlı: sadece dükkanlarda var (ne alınır)
   access?: string; // Sadece dükkanlarda: nasıl gidilir
 };
 

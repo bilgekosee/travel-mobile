@@ -6,6 +6,7 @@ import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View, type 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/chip';
+import { ItemBadge } from '@/components/item-badge';
 import { PlacesMap } from '@/components/places-map';
 import { serifText } from '@/constants/fonts';
 import { MAP_KINDS } from '@/constants/map-kinds';
@@ -110,9 +111,7 @@ export default function MapScreen() {
               <Text style={styles.detailTitle}>Ne alınır</Text>
               <View style={styles.items}>
                 {selected.items.map((item) => (
-                  <Text key={item} style={styles.item}>
-                    {item}
-                  </Text>
+                  <ItemBadge key={item.name} item={item} />
                 ))}
               </View>
             </>
@@ -191,15 +190,6 @@ const styles = StyleSheet.create({
   },
   // Etiketler yan yana dizilir, sığmayan alt satıra geçer (CSS'teki flex-wrap gibi)
   items: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  item: {
-    fontSize: 13,
-    color: '#4A4A4A',
-    backgroundColor: '#EFE9E1',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    overflow: 'hidden', // iOS'ta Text'in köşeleri ancak bununla yuvarlanır
-  },
   button: {
     marginTop: 12,
     minHeight: 44, // Apple'ın önerdiği en küçük dokunma yüksekliği
