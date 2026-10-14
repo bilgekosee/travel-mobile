@@ -12,6 +12,9 @@ export type Photo = {
   sourceUrl: string;
 };
 
+// Enlem (kuzey-güney) ve boylam (doğu-batı). react-native-maps de bu iki alan adını kullanıyor.
+export type Coordinates = { latitude: number; longitude: number };
+
 export type Place = {
   id: string;
   name: string;
@@ -24,6 +27,7 @@ export type Place = {
   description: string;
   tips: string[];
   duration: string;
+  coordinates: Coordinates; // Haritadaki pinin yeri
 };
 
 export type CityInfo = {
@@ -133,6 +137,7 @@ export const PLACES: Place[] = [
       "Yakındaki Sumida Nehri'nden Tokyo Skytree'yi görebilirsiniz.",
     ],
     duration: '1–2 saat',
+    coordinates: { latitude: 35.7148, longitude: 139.7967 },
   },
   {
     id: 'shibuya',
@@ -155,6 +160,7 @@ export const PLACES: Place[] = [
       'Akşam neon ışıkları yandığında daha etkileyici.',
     ],
     duration: '1 saat',
+    coordinates: { latitude: 35.6595, longitude: 139.7005 },
   },
   {
     id: 'meiji',
@@ -177,6 +183,7 @@ export const PLACES: Place[] = [
       'Çıkışta Takeshita Sokağı ve Omotesandō caddesine yürüyebilirsiniz.',
     ],
     duration: '1–1,5 saat',
+    coordinates: { latitude: 35.6764, longitude: 139.6993 },
   },
   {
     id: 'tsukiji',
@@ -199,6 +206,7 @@ export const PLACES: Place[] = [
       'Bazı dükkanlar pazar ve çarşamba günleri kapalı olabilir.',
     ],
     duration: '1–2 saat',
+    coordinates: { latitude: 35.6654, longitude: 139.7707 },
   },
   {
     id: 'fushimi-inari',
@@ -222,6 +230,7 @@ export const PLACES: Place[] = [
       'Rahat ayakkabı giyin, çok merdiven var.',
     ],
     duration: '2–3 saat',
+    coordinates: { latitude: 34.9671, longitude: 135.7727 },
   },
   {
     id: 'kinkakuji',
@@ -244,6 +253,7 @@ export const PLACES: Place[] = [
       "Yakındaki Ryōan-ji'nin taş bahçesiyle birlikte gezilebilir.",
     ],
     duration: '1 saat',
+    coordinates: { latitude: 35.0394, longitude: 135.7292 },
   },
   {
     id: 'arashiyama',
@@ -266,6 +276,7 @@ export const PLACES: Place[] = [
       "Tepedeki Iwatayama Maymun Parkı'ndan şehir manzarası görülür.",
     ],
     duration: 'Yarım gün',
+    coordinates: { latitude: 35.017, longitude: 135.6713 },
   },
   {
     id: 'dotonbori',
@@ -288,6 +299,7 @@ export const PLACES: Place[] = [
       'Akşamları ışıklar yandığında gidin.',
     ],
     duration: '2–3 saat',
+    coordinates: { latitude: 34.6687, longitude: 135.5013 },
   },
   {
     id: 'osaka-castle',
@@ -310,6 +322,7 @@ export const PLACES: Place[] = [
       'Hendeklerde tekne turu yapılabiliyor.',
     ],
     duration: '2 saat',
+    coordinates: { latitude: 34.6873, longitude: 135.5262 },
   },
   {
     id: 'nara-park',
@@ -332,6 +345,7 @@ export const PLACES: Place[] = [
       "Kyoto ya da Osaka'dan günübirlik gezi olarak kolayca gidilir.",
     ],
     duration: 'Yarım gün',
+    coordinates: { latitude: 34.689, longitude: 135.8398 },
   },
   {
     id: 'peace-park',
@@ -354,6 +368,7 @@ export const PLACES: Place[] = [
       "Buradan feribotla Miyajima adasına geçebilirsiniz.",
     ],
     duration: 'Yarım gün',
+    coordinates: { latitude: 34.3955, longitude: 132.4536 },
   },
   {
     id: 'miyajima',
@@ -376,6 +391,7 @@ export const PLACES: Place[] = [
       "Misen Dağı'na teleferikle çıkabilirsiniz.",
     ],
     duration: '1 gün',
+    coordinates: { latitude: 34.2959, longitude: 132.3199 },
   },
   {
     id: 'hakone',
@@ -399,6 +415,7 @@ export const PLACES: Place[] = [
       'Fuji manzarası için açık bir gün seçin.',
     ],
     duration: '1–2 gün',
+    coordinates: { latitude: 35.2048, longitude: 139.0254 },
   },
 ];
 
