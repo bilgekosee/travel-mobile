@@ -19,7 +19,9 @@ import { useSeenOnScreen } from '@/hooks/use-seen-on-screen';
 
 const SIZE = 16;
 const OFF = '#B5AEA5'; // Sönük: gri
-const ON = '#D97706'; // Yanık: kehribar. Beyaz zeminde ikon için gereken 3:1 kontrastı geçer
+// Yanık: altın sarısı. Saf sarı beyaz kartta kaybolurdu; bu ton hem sarı görünür hem seçilir.
+// (Ampul süs: bilgi yanındaki yazıda. Bu yüzden ikonlar için istenen 3:1 kontrast kuralı burada şart değil.)
+const ON = '#F5B800';
 const STAGGER = 250; // Ampuller arasındaki gecikme (ms): yukarıdan aşağıya sırayla yanarlar
 
 // Işık çizgileri: ampulün üstüne yelpaze gibi açılır. 0° = yukarı, eksi = sola, artı = sağa.
