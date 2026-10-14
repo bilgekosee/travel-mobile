@@ -1,7 +1,19 @@
 // Uygulamanın verisi. Gerçek bir projede bu veri genelde bir API'den gelir.
 // TypeScript "type" ile verinin şeklini tanımlıyoruz; yanlış alan yazarsak editör uyarır.
 
-export type City = 'Tokyo' | 'Kyoto' | 'Osaka' | 'Nara' | 'Hiroshima' | 'Hakone' | 'Fuji';
+export type City =
+  | 'Tokyo'
+  | 'Kyoto'
+  | 'Osaka'
+  | 'Nara'
+  | 'Hiroshima'
+  | 'Hakone'
+  | 'Fuji'
+  | 'Kamakura'
+  | 'Nikkō'
+  | 'Kanazawa'
+  | 'Himeji'
+  | 'Shirakawa-gō';
 
 // Wikimedia Commons fotoğrafı. Creative Commons lisansları fotoğrafçının adını ve lisansı
 // belirtmeyi şart koşar (CC0 hariç); ekranda gösteriyoruz.
@@ -20,7 +32,7 @@ export type Place = {
   name: string;
   japaneseName: string;
   city: City;
-  category: 'Tapınak' | 'Şehir' | 'Doğa' | 'Yemek' | 'Tarih' | 'Sanat';
+  category: 'Tapınak' | 'Şehir' | 'Doğa' | 'Yemek' | 'Tarih' | 'Sanat' | 'Eğlence';
   image: Photo;
   color: string; // Fotoğraf yüklenene kadar görünen zemin rengi
   summary: string;
@@ -123,6 +135,66 @@ export const CITIES: CityInfo[] = [
       author: 'Midori',
       license: 'CC BY 3.0',
       sourceUrl: 'https://commons.wikimedia.org/wiki/File:Lake_Kawaguchiko_Sakura_Mount_Fuji_4.JPG',
+    },
+  },
+  {
+    id: 'kamakura',
+    name: 'Kamakura',
+    japaneseName: '鎌倉',
+    tagline: 'Tokyo’ya bir saat uzaklıkta, samuray başkenti: dev Buda, tapınaklar ve deniz kıyısı.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/The_Great_Buddha_of_K%C5%8Dtoku-in_%28Kamakura_Daibutsu%29.jpg/960px-The_Great_Buddha_of_K%C5%8Dtoku-in_%28Kamakura_Daibutsu%29.jpg',
+      author: 'Dandy1022',
+      license: 'CC BY-SA 3.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:The_Great_Buddha_of_Kōtoku-in_(Kamakura_Daibutsu).jpg',
+    },
+  },
+  {
+    id: 'nikko',
+    name: 'Nikkō',
+    japaneseName: '日光',
+    tagline: 'Dağların arasında altın süslemeli tapınaklar, şelaleler ve göller.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Nikko_Toshogu_Yomeimon_Gate_2024.jpg/960px-Nikko_Toshogu_Yomeimon_Gate_2024.jpg',
+      author: 'Jpatokal',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Nikko_Toshogu_Yomeimon_Gate_2024.jpg',
+    },
+  },
+  {
+    id: 'kanazawa',
+    name: 'Kanazawa',
+    japaneseName: '金沢',
+    tagline: 'Japonya’nın en ünlü bahçesi, eski geyşa sokakları ve altın varak.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Kenroku-en_Gankobashi_under_blooming_sakura.jpg/960px-Kenroku-en_Gankobashi_under_blooming_sakura.jpg',
+      author: 'SOHAFun',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Kenroku-en_Gankobashi_under_blooming_sakura.jpg',
+    },
+  },
+  {
+    id: 'himeji',
+    name: 'Himeji',
+    japaneseName: '姫路',
+    tagline: 'Savaşlardan sağ çıkmış, bembeyaz “Beyaz Balıkçıl Kalesi”.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Himeji_Castle%2C_November_2016_-02.jpg/960px-Himeji_Castle%2C_November_2016_-02.jpg',
+      author: 'Martin Falbisoner',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Himeji_Castle,_November_2016_-02.jpg',
+    },
+  },
+  {
+    id: 'shirakawago',
+    name: 'Shirakawa-gō',
+    japaneseName: '白川郷',
+    tagline: 'Dağ vadisinde, kalın saz çatılı masalsı çiftlik evleri.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Shirakawa-go_20170202-3.jpg/960px-Shirakawa-go_20170202-3.jpg',
+      author: 'Suicasmo',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shirakawa-go_20170202-3.jpg',
     },
   },
 ];
@@ -428,7 +500,8 @@ export const PLACES: Place[] = [
       'Fuji manzarası için açık bir gün seçin.',
     ],
     duration: '1–2 gün',
-    coordinates: { latitude: 35.2048, longitude: 139.0254 },
+    // Gölün ortası. (Eskiden tam Hakone Tapınağı'nın üstündeydi; tapınak ayrı bir yer olunca pinler üst üste binerdi.)
+    coordinates: { latitude: 35.219, longitude: 139.0 },
   },
 
   // --- Tokyo ---
@@ -479,6 +552,54 @@ export const PLACES: Place[] = [
     ],
     duration: '1–2 saat',
     coordinates: { latitude: 35.6852, longitude: 139.71 },
+  },
+  {
+    id: 'ueno',
+    name: 'Ueno Parkı',
+    japaneseName: '上野公園',
+    city: 'Tokyo',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Shinobazu_pond_%40_Ueno_Park_%2814273619522%29.jpg/960px-Shinobazu_pond_%40_Ueno_Park_%2814273619522%29.jpg',
+      author: 'Guilhem Vellut from Annecy, France',
+      license: 'CC BY 2.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shinobazu_pond_@_Ueno_Park_(14273619522).jpg',
+    },
+    color: '#5C7F4E',
+    summary: 'Müzeler, hayvanat bahçesi ve nilüferli bir gölet tek parkta.',
+    description:
+      'Tokyo’nun ilk halk parklarından biri. İçinde Tokyo Ulusal Müzesi başta olmak üzere birkaç büyük müze ve Ueno Hayvanat Bahçesi var. Yazın Shinobazu Göleti’ni dev nilüferler kaplar; baharda yollar kiraz ağaçlarıyla çevrilir.',
+    tips: [
+      'Japon sanatını görmek için Tokyo Ulusal Müzesi en iyi başlangıç noktası.',
+      'Kiraz mevsiminde Tokyo’nun en kalabalık hanami yerlerinden biri; sabah erken gidin.',
+      'Parkın hemen yanındaki Ameyoko pazarında sokak yemekleri ve ucuz alışveriş var.',
+    ],
+    duration: 'Yarım gün',
+    coordinates: { latitude: 35.7146, longitude: 139.7714 },
+  },
+  {
+    id: 'imperial-palace',
+    name: 'İmparatorluk Sarayı',
+    japaneseName: '皇居',
+    city: 'Tokyo',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Imperial_Palace_Tokyo_Nijubashi_Bridge.JPG/960px-Imperial_Palace_Tokyo_Nijubashi_Bridge.JPG',
+      author: 'Chris 73',
+      license: 'CC BY-SA 3.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Imperial_Palace_Tokyo_Nijubashi_Bridge.JPG',
+    },
+    color: '#4F5B4A',
+    summary: 'Hendeklerle çevrili, imparator ailesinin yaşadığı saray.',
+    description:
+      'Eski Edo Kalesi’nin yerinde bulunan saray bugün de imparator ailesinin evi. Sarayın kendisine girilemez ama Doğu Bahçeleri halka açıktır; ön meydandan taş Nijūbashi köprüsü ve arkasındaki kale kulesi görünür.',
+    tips: [
+      'Doğu Bahçeleri’ne giriş ücretsiz; genellikle pazartesi ve cuma kapalı.',
+      'Sarayın iç alanı için internetten ücretsiz rehberli tura kayıt olabilirsiniz.',
+      'Hendeği çevreleyen 5 km’lik yol, Tokyo’nun en sevilen koşu parkuru.',
+    ],
+    duration: '1–2 saat',
+    coordinates: { latitude: 35.68, longitude: 139.7528 },
   },
 
   // --- Kyoto ---
@@ -554,6 +675,54 @@ export const PLACES: Place[] = [
     duration: '1–2 saat',
     coordinates: { latitude: 35.0055, longitude: 135.7745 },
   },
+  {
+    id: 'nijo',
+    name: 'Nijō Kalesi',
+    japaneseName: '二条城',
+    city: 'Kyoto',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Ninomaru_Palace%2C_November_2016.jpg/960px-Ninomaru_Palace%2C_November_2016.jpg',
+      author: 'Martin Falbisoner',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Ninomaru_Palace,_November_2016.jpg',
+    },
+    color: '#6E5A3E',
+    summary: 'Şogunların Kyoto’daki sarayı ve “bülbül zeminleri”.',
+    description:
+      '1603’te Tokugawa Ieyasu’nun yaptırdığı kale, şogunların imparatorluk başkentindeki konutuydu. Ninomaru Sarayı’nın ahşap koridorları üstüne basılınca kuş sesi gibi gıcırdar; bu “bülbül zeminleri”nin davetsiz misafirleri fark etmek için yapıldığı anlatılır.',
+    tips: [
+      'Koridorlarda yavaş yürüyün ve zeminin “ötüşünü” dinleyin.',
+      'Saray içinde fotoğraf çekmek yasak; bahçelerde serbest.',
+      'İlkbaharda akşam kiraz ağaçları ışıklandırılır.',
+    ],
+    duration: '1,5 saat',
+    coordinates: { latitude: 35.0142, longitude: 135.7481 },
+  },
+  {
+    id: 'philosophers-path',
+    name: 'Felsefe Yolu',
+    japaneseName: '哲学の道',
+    city: 'Kyoto',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Tetsugaku-no-michi_-_Philosopher%27s_Walk_-_Kyoto.jpg/960px-Tetsugaku-no-michi_-_Philosopher%27s_Walk_-_Kyoto.jpg',
+      author: 'Gzzz',
+      license: 'CC BY 4.0',
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Tetsugaku-no-michi_-_Philosopher's_Walk_-_Kyoto.jpg",
+    },
+    color: '#5E7A55',
+    summary: 'Kiraz ağaçlarıyla çevrili kanal boyunca 2 km’lik yürüyüş yolu.',
+    description:
+      'Adını her gün burada yürüyerek düşünen filozof Nishida Kitarō’dan alır. Ginkaku-ji’den güneye uzanan yol, küçük tapınakların, kafelerin ve sokak kedilerinin arasından geçer; kiraz mevsiminde Kyoto’nun en güzel yürüyüşlerinden biridir.',
+    tips: [
+      'Ginkaku-ji’den başlayıp güneye, Nanzen-ji’ye doğru yürüyün; yol hafif yokuş aşağı.',
+      'Kiraz mevsimi ve sonbahar en güzel, ama en kalabalık zamanlar.',
+      'Yol boyunca küçük tapınaklara sapın; çoğu sakin ve ücretsiz.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 35.0213, longitude: 135.7946 },
+  },
 
   // --- Osaka ---
   {
@@ -579,6 +748,54 @@ export const PLACES: Place[] = [
     ],
     duration: '1 saat',
     coordinates: { latitude: 34.7053, longitude: 135.4903 },
+  },
+  {
+    id: 'kaiyukan',
+    name: 'Kaiyūkan Akvaryumu',
+    japaneseName: '海遊館',
+    city: 'Osaka',
+    category: 'Eğlence',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Osaka_Aquarium_Kaiyukan_2022-04-24.jpg/960px-Osaka_Aquarium_Kaiyukan_2022-04-24.jpg',
+      author: 'Dick Thomas Johnson',
+      license: 'CC BY 2.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Osaka_Aquarium_Kaiyukan_2022-04-24.jpg',
+    },
+    color: '#2F5D8A',
+    summary: 'Dev tankında balina köpekbalıklarının yüzdüğü akvaryum.',
+    description:
+      'Dünyanın en büyük akvaryumlarından biri. Ziyaret, binanın tepesinden başlayıp dev orta tankın etrafında spiral şeklinde aşağı iner; Pasifik Okyanusu’nu temsil eden bu tankta balina köpekbalıkları yüzer.',
+    tips: [
+      'Biletleri internetten alın; hafta sonları gişe kuyruğu uzun olur.',
+      'Yanındaki Tempozan dev dönme dolabından Osaka Körfezi’ni izleyin.',
+      'Chūō metro hattında Osakakō İstasyonu’ndan 5 dakika yürüme.',
+    ],
+    duration: '2–3 saat',
+    coordinates: { latitude: 34.6545, longitude: 135.429 },
+  },
+  {
+    id: 'usj',
+    name: 'Universal Studios Japan',
+    japaneseName: 'ユニバーサル・スタジオ・ジャパン',
+    city: 'Osaka',
+    category: 'Eğlence',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Universal_Studios_Japan_entrance.jpg/960px-Universal_Studios_Japan_entrance.jpg',
+      author: 'Csiiiyu',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Universal_Studios_Japan_entrance.jpg',
+    },
+    color: '#2E5AA8',
+    summary: 'Super Nintendo World ve Harry Potter dünyasıyla tema parkı.',
+    description:
+      'Japonya’nın en popüler tema parklarından biri. Mario oyunlarının içine girmiş gibi hissettiren Super Nintendo World ve Hogwarts Şatosu’nun bulunduğu Harry Potter bölümü en çok ilgi gören alanlar.',
+    tips: [
+      'Kalabalık günlerde Super Nintendo World’e girmek için uygulamadan giriş saati almanız gerekebilir.',
+      'Express Pass, uzun kuyrukları atlamanızı sağlar; erken tükenir.',
+      'JR Yumesaki hattında Universal City İstasyonu’nda inin.',
+    ],
+    duration: '1 gün',
+    coordinates: { latitude: 34.6654, longitude: 135.4323 },
   },
 
   // --- Nara ---
@@ -632,6 +849,30 @@ export const PLACES: Place[] = [
     duration: '1 saat',
     coordinates: { latitude: 34.4027, longitude: 132.4594 },
   },
+  {
+    id: 'shukkeien',
+    name: 'Shukkei-en',
+    japaneseName: '縮景園',
+    city: 'Hiroshima',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/20100722_Hiroshima_Shukkeien_4387.jpg/960px-20100722_Hiroshima_Shukkeien_4387.jpg',
+      author: 'Jakub Hałun',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:20100722_Hiroshima_Shukkeien_4387.jpg',
+    },
+    color: '#4E7A4A',
+    summary: 'Manzaraları minyatür olarak yeniden kuran 400 yıllık bahçe.',
+    description:
+      '1620’de yapılan bahçenin adı “küçültülmüş manzara” demek: göletin etrafındaki tepeler, köprüler ve çay evleri ünlü manzaraların minyatürleridir. 1945’te ağır hasar gördü, sonra aslına uygun biçimde yeniden düzenlendi.',
+    tips: [
+      'Göletteki renkli koi balıklarını izlemeden çıkmayın.',
+      'Hiroşima İstasyonu’na ve kaleye yürüme mesafesinde; ikisiyle birlikte gezin.',
+      'Sonbaharda akçaağaçlar kızarınca en güzel halini alır.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 34.4004, longitude: 132.4673 },
+  },
 
   // --- Hakone ---
   {
@@ -657,6 +898,30 @@ export const PLACES: Place[] = [
     ],
     duration: '2–3 saat',
     coordinates: { latitude: 35.2445, longitude: 139.0505 },
+  },
+  {
+    id: 'hakone-shrine',
+    name: 'Hakone Tapınağı',
+    japaneseName: '箱根神社',
+    city: 'Hakone',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Torii_on_Lake_Ashi_%40_Hakone_Shrine_%2813776878594%29.jpg/960px-Torii_on_Lake_Ashi_%40_Hakone_Shrine_%2813776878594%29.jpg',
+      author: 'Guilhem Vellut from Annecy, France',
+      license: 'CC BY 2.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Torii_on_Lake_Ashi_@_Hakone_Shrine_(13776878594).jpg',
+    },
+    color: '#B5402E',
+    summary: 'Ashi Gölü’nün içinde duran kırmızı “Barış Toriisi”.',
+    description:
+      'Ormanın içinde, dev sedir ağaçlarıyla çevrili bir Şinto tapınağı. En bilinen yeri, gölün suyunun içinde yükselen kırmızı torii kapısı; açık havada arkasında Fuji Dağı da görünür.',
+    tips: [
+      'Toriinin önünde fotoğraf için kuyruk olur; sabah erken gidin.',
+      'Ashi Gölü’nde korsan gemisi görünümlü teknelerle Moto-Hakone iskelesine gelebilirsiniz.',
+      'Tapınağa çıkan, sedirlerle çevrili taş merdivenler de en az torii kadar güzel.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 35.2049, longitude: 139.0235 },
   },
 
   // --- Fuji ---
@@ -731,6 +996,208 @@ export const PLACES: Place[] = [
     ],
     duration: '1–1,5 saat',
     coordinates: { latitude: 35.46, longitude: 138.8333 },
+  },
+
+  // --- Kamakura ---
+  {
+    id: 'daibutsu',
+    name: 'Kamakura Büyük Buda',
+    japaneseName: '鎌倉大仏',
+    city: 'Kamakura',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/The_Great_Buddha_of_Kamakura.jpg/960px-The_Great_Buddha_of_Kamakura.jpg',
+      author: 'Alexandar Vujadinovic',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:The_Great_Buddha_of_Kamakura.jpg',
+    },
+    color: '#5E7068',
+    summary: 'Açık havada oturan 13 metrelik bronz Buda heykeli.',
+    description:
+      'Kōtoku-in tapınağındaki heykel 13. yüzyılda döküldü. Bir zamanlar büyük bir salonun içindeydi; salon 15. yüzyılda bir tsunamiyle yıkılınca Buda o günden beri açık havada oturuyor.',
+    tips: [
+      'Küçük bir ücretle heykelin içine girip bronz döküm tekniğini görebilirsiniz.',
+      'Enoden treniyle Hase İstasyonu’nda inin, 7 dakika yürüme.',
+      'Yakındaki Hase-dera tapınağından deniz manzarası çok güzel.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 35.3167, longitude: 139.5359 },
+  },
+  {
+    id: 'tsurugaoka',
+    name: 'Tsurugaoka Hachimangū',
+    japaneseName: '鶴岡八幡宮',
+    city: 'Kamakura',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Tsurugaoka_Hachimangu_001.jpg/960px-Tsurugaoka_Hachimangu_001.jpg',
+      author: 'Ocdp',
+      license: 'CC0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Tsurugaoka_Hachimangu_001.jpg',
+    },
+    color: '#A33A2A',
+    summary: 'Kamakura’nın kalbindeki büyük Şinto tapınağı.',
+    description:
+      'Samuray yönetiminin kurucusu Minamoto no Yoritomo’nun 12. yüzyılda bugünkü yerine taşıttığı tapınak, Kamakura’nın merkezidir. Denizden tapınağa uzanan uzun yol, şehrin bir zamanlar başkent olduğunu hatırlatır.',
+    tips: [
+      'Kamakura İstasyonu’ndan Komachi-dōri alışveriş sokağından geçerek yürüyün, 10 dakika.',
+      'Tapınağa çıkan büyük merdivenden şehir ve deniz görünür.',
+      'Yeni yılın ilk günlerinde (hatsumōde) çok kalabalık olur.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 35.3259, longitude: 139.5565 },
+  },
+
+  // --- Nikkō ---
+  {
+    id: 'toshogu',
+    name: 'Nikkō Tōshō-gū',
+    japaneseName: '日光東照宮',
+    city: 'Nikkō',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Nikko_toshogu_yomeimon_gate_ver1.jpg/960px-Nikko_toshogu_yomeimon_gate_ver1.jpg',
+      author: 'Koichi Sato',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Nikko_toshogu_yomeimon_gate_ver1.jpg',
+    },
+    color: '#B58A2E',
+    summary: 'Altın ve renkli oymalarla kaplı şogun türbesi.',
+    description:
+      'Tokugawa şogunluğunun kurucusu Tokugawa Ieyasu’nun türbesi, UNESCO Dünya Mirası. Sade Japon tapınaklarının aksine her yüzeyi altın varak ve renkli oymalarla süslüdür; en ünlü yapısı Yōmeimon kapısıdır.',
+    tips: [
+      '“Görme, duyma, söyleme” diyen üç bilge maymun oymasını ve “uyuyan kedi”yi arayın.',
+      'Tobu Nikkō İstasyonu’ndan otobüsle 10 dakika ya da 30 dakika yürüme.',
+      'Tokyo’dan günübirlik gidilebilir ama tapınaklar ve şelale için bir gece kalmak daha rahat.',
+    ],
+    duration: '2–3 saat',
+    coordinates: { latitude: 36.7581, longitude: 139.5989 },
+  },
+  {
+    id: 'kegon',
+    name: 'Kegon Şelalesi',
+    japaneseName: '華厳滝',
+    city: 'Nikkō',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Kegon_Taki.jpg/960px-Kegon_Taki.jpg',
+      author: 'Jordy Meow',
+      license: 'CC BY-SA 3.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Kegon_Taki.jpg',
+    },
+    color: '#3F6A5E',
+    summary: 'Chūzenji Gölü’nden 97 metre aşağı dökülen şelale.',
+    description:
+      'Japonya’nın en güzel üç şelalesinden biri sayılır. Chūzenji Gölü’nün suyu dik bir kayalıktan tek seferde 97 metre aşağı dökülür; sonbaharda çevresi kızıl ve sarı yapraklarla kaplanır.',
+    tips: [
+      'Asansörle şelalenin dibindeki seyir terasına inebilirsiniz (ücretli).',
+      'Nikkō’dan gelirken kıvrım kıvrım Irohazaka yolundan geçilir; manzarası güzel.',
+      'Sonbaharda yollar çok kalabalık olur; sabah erken yola çıkın.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 36.7383, longitude: 139.5017 },
+  },
+
+  // --- Kanazawa ---
+  {
+    id: 'kenrokuen',
+    name: 'Kenroku-en',
+    japaneseName: '兼六園',
+    city: 'Kanazawa',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/20190705_Kenroku-en-7.jpg/960px-20190705_Kenroku-en-7.jpg',
+      author: 'Balon Greyjoy',
+      license: 'CC0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:20190705_Kenroku-en-7.jpg',
+    },
+    color: '#5A7A48',
+    summary: 'Japonya’nın en güzel üç bahçesinden biri.',
+    description:
+      'Feodal beylerin yüzyıllar içinde genişlettiği bahçe; göletler, taş fenerler ve özenle şekil verilmiş çam ağaçlarıyla doludur. Göletin kenarındaki iki ayaklı Kotoji fener, Kanazawa’nın simgesidir.',
+    tips: [
+      'Kışın ağaçları kar ağırlığından korumak için kurulan ip çadırlar (yukitsuri) çok fotojenik.',
+      'Hemen yanındaki Kanazawa Kalesi Parkı’yla birlikte gezin.',
+      'Sabah erken saatlerde bahçe çok daha sakin.',
+    ],
+    duration: '1,5 saat',
+    coordinates: { latitude: 36.5621, longitude: 136.6626 },
+  },
+  {
+    id: 'higashi-chaya',
+    name: 'Higashi Chaya',
+    japaneseName: 'ひがし茶屋街',
+    city: 'Kanazawa',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Higashi_Chaya_district%2C_Kanazawa_%283810704024%29.jpg/960px-Higashi_Chaya_district%2C_Kanazawa_%283810704024%29.jpg',
+      author: 'Andrea Schaffer from Sydney, Australia',
+      license: 'CC BY 2.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Higashi_Chaya_district,_Kanazawa_(3810704024).jpg',
+    },
+    color: '#7A4E36',
+    summary: 'Ahşap çay evleriyle dolu eski geyşa semti.',
+    description:
+      'Edo döneminden kalma ahşap cepheli çay evleriyle Kyoto’nun Gion’una benzeyen ama daha sakin bir semt. Bazı çay evleri müze olarak gezilebilir; diğerleri kafe ve el sanatları dükkanına dönüşmüş.',
+    tips: [
+      'Kanazawa, Japonya’daki altın varağın neredeyse tamamını üretir; altın varaklı dondurmayı deneyin.',
+      'Shima çay evi müzesinde eski bir geyşa evinin içini görebilirsiniz.',
+      'Kenroku-en’e 15–20 dakika yürüme mesafesinde.',
+    ],
+    duration: '1–2 saat',
+    coordinates: { latitude: 36.5725, longitude: 136.6667 },
+  },
+
+  // --- Himeji ---
+  {
+    id: 'himeji-castle',
+    name: 'Himeji Kalesi',
+    japaneseName: '姫路城',
+    city: 'Himeji',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Himeji_castle_in_may_2015.jpg/960px-Himeji_castle_in_may_2015.jpg',
+      author: 'Nikos Kitsakis',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Himeji_castle_in_may_2015.jpg',
+    },
+    color: '#8A8F96',
+    summary: 'Japonya’nın aslından günümüze kalan en büyük ve en güzel kalesi.',
+    description:
+      'Beyaz duvarları yüzünden “Beyaz Balıkçıl Kalesi” denir. 17. yüzyılın başında bugünkü halini alan ana kule, savaşlardan ve İkinci Dünya Savaşı bombardımanlarından sağ çıktı; Japonya’nın ilk UNESCO Dünya Mirası alanlarından biridir.',
+    tips: [
+      'Himeji İstasyonu’ndan kaleye düz bir cadde uzanır, 15–20 dakika yürüme.',
+      'Kulenin içinde dik ahşap merdivenler var; rahat ayakkabı giyin.',
+      'Yanındaki Kōko-en bahçesiyle kombine bilet alabilirsiniz.',
+    ],
+    duration: '2–3 saat',
+    coordinates: { latitude: 34.8394, longitude: 134.6939 },
+  },
+
+  // --- Shirakawa-gō ---
+  {
+    id: 'shirakawago',
+    name: 'Ogimachi Köyü',
+    japaneseName: '白川郷・荻町',
+    city: 'Shirakawa-gō',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Shirakawa-go_from_Ogimachi_Joseki_Observatory_36446961844.jpg/960px-Shirakawa-go_from_Ogimachi_Joseki_Observatory_36446961844.jpg',
+      author: '吉爾 from 臺北縣, 臺灣',
+      license: 'CC BY-SA 2.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shirakawa-go_from_Ogimachi_Joseki_Observatory_36446961844.jpg',
+    },
+    color: '#6B5A3E',
+    summary: 'Dik saz çatılı “gasshō” evlerinin UNESCO köyü.',
+    description:
+      'Çatıları dua eden ellere benzediği için “gasshō-zukuri” denen bu çiftlik evleri, yoğun kar yağışına dayanmak için dik yapılmıştır. Bazıları hâlâ ev olarak kullanılıyor, bazıları müze; birinde konaklamak bile mümkün.',
+    tips: [
+      'Köyü yukarıdan görmek için Shiroyama seyir terasına çıkın.',
+      'Kış ışıklandırma etkinlikleri çok popüler ve önceden rezervasyon gerektirir.',
+      'Takayama ya da Kanazawa’dan otobüsle yaklaşık 1 saat.',
+    ],
+    duration: 'Yarım gün',
+    coordinates: { latitude: 36.2578, longitude: 136.9061 },
   },
 ];
 
