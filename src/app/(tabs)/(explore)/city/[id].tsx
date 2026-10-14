@@ -10,11 +10,11 @@ import { Chip } from '@/components/chip';
 import { DayPlan, FoodList, QuickFacts, Section, ShopList, TipList } from '@/components/city-guide';
 import { PhotoCredit } from '@/components/photo-credit';
 import { PlaceCard } from '@/components/place-card';
-import { ScrollOffsetContext } from '@/components/rail-divider';
 import { serifText } from '@/constants/fonts';
 import { getCityGuide } from '@/data/city-guides';
 import { getCity, getPlacesInCity, Place } from '@/data/places';
 import { getShopsInCity } from '@/data/shops';
+import { ScrollOffsetContext } from '@/hooks/use-seen-on-screen';
 
 export default function CityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -101,7 +101,10 @@ export default function CityScreen() {
             </Section>
           )}
           <Section title="Pratik bilgiler">
-            <TipList tips={guide.tips} />
+            {/* İpucu ampulleri de ekrana girince yanmak için kaydırma miktarını okur */}
+            <ScrollOffsetContext value={scrollOffset}>
+              <TipList tips={guide.tips} />
+            </ScrollOffsetContext>
           </Section>
         </>
       )}
