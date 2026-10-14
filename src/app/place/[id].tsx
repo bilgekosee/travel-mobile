@@ -3,16 +3,21 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SymbolView, SymbolViewProps } from 'expo-symbols';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
 
 import { Section, TipList } from '@/components/city-guide';
 import { PhotoCredit } from '@/components/photo-credit';
 import { serifText } from '@/constants/fonts';
 import { getPlace } from '@/data/places';
+import { ScrollOffsetContext } from '@/hooks/use-seen-on-screen';
 
 export default function PlaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const place = getPlace(id);
+  // Sayfanın ne kadar kaydırıldığı: ipucu ampulleri ekrana girince yanmak için okur (şehir sayfasındakiyle aynı)
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollOffset(scrollRef);
 
   if (!place) {
     return (
@@ -23,7 +28,8 @@ export default function PlaceDetailScreen() {
   }
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic">
+    // Animated.ScrollView: Reanimated'in kaydırmayı UI thread'de izleyebilmesi için
+    <Animated.ScrollView ref={scrollRef} contentInsetAdjustmentBehavior="automatic">
       {/* Ekrandan başlığı dinamik olarak ayarlıyoruz */}
       <Stack.Screen options={{ title: place.name }} />
 
@@ -57,10 +63,12 @@ export default function PlaceDetailScreen() {
         <Text style={styles.description}>{place.description}</Text>
 
         <Section title="İpuçları">
-          <TipList tips={place.tips} />
+          <ScrollOffsetContext value={scrollOffset}>
+            <TipList tips={place.tips} />
+          </ScrollOffsetContext>
         </Section>
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 
