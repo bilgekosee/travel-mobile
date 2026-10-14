@@ -1,7 +1,7 @@
 // Uygulamanın verisi. Gerçek bir projede bu veri genelde bir API'den gelir.
 // TypeScript "type" ile verinin şeklini tanımlıyoruz; yanlış alan yazarsak editör uyarır.
 
-export type City = 'Tokyo' | 'Kyoto' | 'Osaka' | 'Nara' | 'Hiroshima' | 'Hakone';
+export type City = 'Tokyo' | 'Kyoto' | 'Osaka' | 'Nara' | 'Hiroshima' | 'Hakone' | 'Fuji';
 
 // Wikimedia Commons fotoğrafı. Creative Commons lisansları fotoğrafçının adını ve lisansı
 // belirtmeyi şart koşar (CC0 hariç); ekranda gösteriyoruz.
@@ -20,7 +20,7 @@ export type Place = {
   name: string;
   japaneseName: string;
   city: City;
-  category: 'Tapınak' | 'Şehir' | 'Doğa' | 'Yemek' | 'Tarih';
+  category: 'Tapınak' | 'Şehir' | 'Doğa' | 'Yemek' | 'Tarih' | 'Sanat';
   image: Photo;
   color: string; // Fotoğraf yüklenene kadar görünen zemin rengi
   summary: string;
@@ -110,6 +110,19 @@ export const CITIES: CityInfo[] = [
       author: '663highland',
       license: 'CC BY-SA 4.0',
       sourceUrl: 'https://commons.wikimedia.org/wiki/File:260505_Moto-Hakone_Hakone_Japan01s3.jpg',
+    },
+  },
+  {
+    // Fuji Dağı'nı görmek için gidilen yer: kuzey eteğindeki göller bölgesi (Kawaguchiko çevresi)
+    id: 'fuji',
+    name: 'Fuji',
+    japaneseName: '富士五湖',
+    tagline: 'Fuji Dağı’nın eteğinde beş göl, kırmızı bir pagoda ve dağın kar sularıyla dolan kaynaklar.',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Lake_Kawaguchiko_Sakura_Mount_Fuji_4.JPG/960px-Lake_Kawaguchiko_Sakura_Mount_Fuji_4.JPG',
+      author: 'Midori',
+      license: 'CC BY 3.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Lake_Kawaguchiko_Sakura_Mount_Fuji_4.JPG',
     },
   },
 ];
@@ -416,6 +429,308 @@ export const PLACES: Place[] = [
     ],
     duration: '1–2 gün',
     coordinates: { latitude: 35.2048, longitude: 139.0254 },
+  },
+
+  // --- Tokyo ---
+  {
+    id: 'skytree',
+    name: 'Tokyo Skytree',
+    japaneseName: '東京スカイツリー',
+    city: 'Tokyo',
+    category: 'Şehir',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Tokyo_Skytree_2023.jpg/960px-Tokyo_Skytree_2023.jpg',
+      author: 'Akonnchiroll',
+      license: 'CC0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Tokyo_Skytree_2023.jpg',
+    },
+    color: '#5B7FA6',
+    summary: '634 metrelik dünyanın en yüksek kulesi ve iki seyir terası.',
+    description:
+      '2012’de açılan Skytree, 350 ve 450 metredeki seyir teraslarından Tokyo’yu ufka kadar gösterir; açık havada Fuji Dağı bile seçilebilir. Altındaki Solamachi’de yüzlerce dükkan ve restoran var.',
+    tips: [
+      'Biletleri internetten önceden alırsanız kuyrukta beklemezsiniz.',
+      'En net manzara için sabah erken ya da gün batımı saatini seçin.',
+      'Sensō-ji’ye yaklaşık 20 dakika yürüme mesafesinde; ikisini aynı güne koyun.',
+    ],
+    duration: '1,5–2 saat',
+    coordinates: { latitude: 35.7101, longitude: 139.8107 },
+  },
+  {
+    id: 'shinjuku-gyoen',
+    name: 'Shinjuku Gyoen',
+    japaneseName: '新宿御苑',
+    city: 'Tokyo',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Shinjuku_Gyoen_National_Garden%2C_Tokyo%2C_20240822_1447_5457.jpg/960px-Shinjuku_Gyoen_National_Garden%2C_Tokyo%2C_20240822_1447_5457.jpg',
+      author: 'Jakub Hałun',
+      license: 'CC BY 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shinjuku_Gyoen_National_Garden,_Tokyo,_20240822_1447_5457.jpg',
+    },
+    color: '#4E7D3A',
+    summary: 'Gökdelenlerin ortasında eski imparatorluk bahçesi.',
+    description:
+      'Bir zamanlar imparatorluk ailesine ait olan bahçe; Japon, İngiliz ve Fransız tarzı bölümleri bir arada barındırır. Bahar başında binden fazla kiraz ağacıyla Tokyo’nun en sevilen hanami (çiçek seyri) yerlerinden biridir.',
+    tips: [
+      'Giriş ücretli ve parka alkol sokmak yasak; piknik için ideal ama sakin bir yer.',
+      'Genellikle pazartesileri kapalı; gitmeden önce saatlere bakın.',
+      'Kiraz mevsiminde kalabalık olur, hafta içi sabah gidin.',
+    ],
+    duration: '1–2 saat',
+    coordinates: { latitude: 35.6852, longitude: 139.71 },
+  },
+
+  // --- Kyoto ---
+  {
+    id: 'kiyomizu',
+    name: 'Kiyomizu-dera',
+    japaneseName: '清水寺',
+    city: 'Kyoto',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Kiyomizu-dera%2C_Kyoto%2C_November_2016_-01.jpg/960px-Kiyomizu-dera%2C_Kyoto%2C_November_2016_-01.jpg',
+      author: 'Martin Falbisoner',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Kiyomizu-dera,_Kyoto,_November_2016_-01.jpg',
+    },
+    color: '#B5462E',
+    summary: 'Ahşap terasıyla tepeden Kyoto’ya bakan UNESCO tapınağı.',
+    description:
+      '778’de kurulan tapınağın ana salonu, yamaca dikilmiş yüzlerce ahşap sütunun taşıdığı büyük bir terasa açılır. Aşağıdaki Otowa Şelalesi’nin üç kolundan su içmenin uzun ömür, aşk ve başarı getirdiğine inanılır.',
+    tips: [
+      'Tapınağa Sannenzaka ve Ninenzaka’nın taş yokuşlarından yürüyerek çıkın.',
+      'Sabah açılışta gidin; öğleden sonra okul gezileriyle çok kalabalık olur.',
+      'İlkbahar ve sonbaharda akşam ışıklandırmaları yapılır.',
+    ],
+    duration: '1,5–2 saat',
+    coordinates: { latitude: 34.9949, longitude: 135.785 },
+  },
+  {
+    id: 'ginkakuji',
+    name: 'Ginkaku-ji',
+    japaneseName: '銀閣寺',
+    city: 'Kyoto',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Ginkaku-ji_Kyoto_18.jpg/960px-Ginkaku-ji_Kyoto_18.jpg',
+      author: 'Hyppolyte de Saint-Rambert',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Ginkaku-ji_Kyoto_18.jpg',
+    },
+    color: '#6B6F5A',
+    summary: '“Gümüş Köşk”: sade mimarisi ve kum bahçesiyle zen tapınağı.',
+    description:
+      '15. yüzyılda şogun Ashikaga Yoshimasa’nın inzivaya çekildiği köşk. Adına rağmen hiç gümüşle kaplanmamıştır. Dalgalı desenli kum bahçesi ve koni biçimli kum tepesi Kōgetsudai, Japon bahçe sanatının en bilinen örneklerindendir.',
+    tips: [
+      'Bahçe yolunu sonuna kadar yürüyün; tepeden köşk ve şehir birlikte görünür.',
+      'Tapınaktan güneye uzanan Felsefe Yolu’nda (Tetsugaku-no-michi) kanal boyunca yürüyün.',
+      'Kinkaku-ji (Altın Köşk) ile karşılaştırmak için ikisini aynı gezide görün.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 35.027, longitude: 135.7982 },
+  },
+  {
+    id: 'gion',
+    name: 'Gion',
+    japaneseName: '祇園',
+    city: 'Kyoto',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Shirakara_Canal%2C_Gion%2C_Kyoto.jpg/960px-Shirakara_Canal%2C_Gion%2C_Kyoto.jpg',
+      author: 'MichaelMaggs',
+      license: 'CC BY-SA 2.5',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shirakara_Canal,_Gion,_Kyoto.jpg',
+    },
+    color: '#7A5A3A',
+    summary: 'Ahşap çay evleri, taş sokaklar ve geyşaların semti.',
+    description:
+      'Kyoto’nun en ünlü geyşa (geiko) semti. Hanamikōji caddesindeki ahşap çay evleri ve söğütlerle çevrili Shirakawa kanalı, eski Kyoto’nun en iyi korunmuş sokaklarındandır.',
+    tips: [
+      'Akşamüstü fenerler yanınca gidin; sokaklar en güzel o saatte görünür.',
+      'Geiko ve maiko’ları izinsiz fotoğraflamayın, yollarını kesmeyin.',
+      'Bazı özel sokaklarda fotoğraf çekmek yasak; tabelalara dikkat edin.',
+    ],
+    duration: '1–2 saat',
+    coordinates: { latitude: 35.0055, longitude: 135.7745 },
+  },
+
+  // --- Osaka ---
+  {
+    id: 'umeda-sky',
+    name: 'Umeda Sky Building',
+    japaneseName: '梅田スカイビル',
+    city: 'Osaka',
+    category: 'Şehir',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Umeda_Sky_Building%2C_Osaka%2C_November_2016_-02.jpg/960px-Umeda_Sky_Building%2C_Osaka%2C_November_2016_-02.jpg',
+      author: 'Martin Falbisoner',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Umeda_Sky_Building,_Osaka,_November_2016_-02.jpg',
+    },
+    color: '#4A6C8C',
+    summary: 'Tepesinde açık hava seyir terası olan ikiz gökdelen.',
+    description:
+      'İki kuleyi en üstte birleştiren “Floating Garden” terası, Osaka’yı 360 derece gösterir. Kulelerin arasındaki boşlukta yükselen cam yürüyen merdivenler binanın en bilinen görüntüsüdür.',
+    tips: [
+      'Gün batımına doğru çıkın; şehir ışıklarının yanışını izlersiniz.',
+      'Bodrum kattaki Takimi Kōji, eski Osaka sokaklarını canlandıran bir yemek sokağı.',
+      'Umeda İstasyonu’ndan yaklaşık 10 dakika yürüme.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 34.7053, longitude: 135.4903 },
+  },
+
+  // --- Nara ---
+  {
+    id: 'kasuga',
+    name: 'Kasuga Taisha',
+    japaneseName: '春日大社',
+    city: 'Nara',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Nara_Kasuga-taisha_Lanterns_%26_Deer_05.jpg/960px-Nara_Kasuga-taisha_Lanterns_%26_Deer_05.jpg',
+      author: 'Zairon',
+      license: 'CC BY 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Nara_Kasuga-taisha_Lanterns_&_Deer_05.jpg',
+    },
+    color: '#8A6A3B',
+    summary: 'Binlerce taş ve bronz fenerle kaplı orman içi tapınak.',
+    description:
+      '768’de kurulan Şinto tapınağına giden yol, yosun tutmuş taş fenerlerle çevrilidir; tapınağın içinde de yüzlerce bronz fener asılıdır. Fenerler yılda iki kez, şubat ve ağustostaki Mantōrō festivallerinde yakılır.',
+    tips: [
+      'Nara Parkı’ndan ormanın içinden yürüyerek gelin; yol boyunca geyikler eşlik eder.',
+      'Fenerlerin yandığı Mantōrō festival tarihlerine denk getirebilirseniz kaçırmayın.',
+      'Tōdai-ji ile aynı gün kolayca gezilir.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 34.6812, longitude: 135.8484 },
+  },
+
+  // --- Hiroshima ---
+  {
+    id: 'hiroshima-castle',
+    name: 'Hiroşima Kalesi',
+    japaneseName: '広島城',
+    city: 'Hiroshima',
+    category: 'Tarih',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Hiroshima_Castle%2C_West_view_20190417_1.jpg/960px-Hiroshima_Castle%2C_West_view_20190417_1.jpg',
+      author: 'DXR',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Hiroshima_Castle,_West_view_20190417_1.jpg',
+    },
+    color: '#3E4A3A',
+    summary: 'Hendekle çevrili, savaştan sonra yeniden yapılan “Sazan Kalesi”.',
+    description:
+      'Asıl kale 1945’teki atom bombasıyla yıkıldı; ana kule 1958’de yeniden inşa edildi ve bugün içinde şehrin samuray dönemini anlatan bir müze var. Hendeklerin çevresi kiraz mevsiminde çok güzeldir.',
+    tips: [
+      'Barış Anıtı Parkı’na yaklaşık 15–20 dakika yürüme mesafesinde.',
+      'Kulenin tepesinden şehrin bugünkü halini görmek, yeniden doğuşunu anlamaya yardımcı olur.',
+      'Kale bahçesine giriş ücretsiz; sadece müze ücretli.',
+    ],
+    duration: '1 saat',
+    coordinates: { latitude: 34.4027, longitude: 132.4594 },
+  },
+
+  // --- Hakone ---
+  {
+    id: 'open-air-museum',
+    name: 'Hakone Açık Hava Müzesi',
+    japaneseName: '彫刻の森美術館',
+    city: 'Hakone',
+    category: 'Sanat',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Hakone_Open-air_Museum_20211202-5.jpg/960px-Hakone_Open-air_Museum_20211202-5.jpg',
+      author: 'Suicasmo',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Hakone_Open-air_Museum_20211202-5.jpg',
+    },
+    color: '#7D5A3C',
+    summary: 'Dağların arasında, çimenlerin üstünde heykel bahçesi.',
+    description:
+      '1969’da açılan müzede yüzlerce heykel açık havada, dağ manzarasının önünde sergilenir. İçeride bir Picasso pavyonu, çocukların içine girip oynayabildiği dev ahşap ve örgü yapılar bulunur.',
+    tips: [
+      'Hakone Tozan treniyle Chōkoku-no-Mori İstasyonu’nda inin, müze hemen yanında.',
+      'Bahçedeki ücretsiz ayak onseninde (ashiyu) yorgun ayaklarınızı dinlendirin.',
+      'Hakone Free Pass ile giriş ücreti indirimli.',
+    ],
+    duration: '2–3 saat',
+    coordinates: { latitude: 35.2445, longitude: 139.0505 },
+  },
+
+  // --- Fuji ---
+  {
+    id: 'chureito',
+    name: 'Chūreitō Pagodası',
+    japaneseName: '忠霊塔',
+    city: 'Fuji',
+    category: 'Tapınak',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Chureito_Pagoda_and_Mount_Fuji_2023-03-07.jpg/960px-Chureito_Pagoda_and_Mount_Fuji_2023-03-07.jpg',
+      author: 'Stjepko Krehula',
+      license: 'CC BY 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Chureito_Pagoda_and_Mount_Fuji_2023-03-07.jpg',
+    },
+    color: '#B23A2E',
+    summary: 'Fuji Dağı’nın önünde beş katlı kırmızı pagoda.',
+    description:
+      'Arakurayama Sengen Parkı’ndaki pagoda, savaşta ölenler için anıt olarak yapıldı. Arkasında yükselen Fuji Dağı ile birlikte Japonya’nın en çok fotoğraflanan manzaralarından biridir; ilkbaharda kiraz çiçekleri, sonbaharda kızıl yapraklarla çevrilir.',
+    tips: [
+      'Seyir noktasına yaklaşık 400 basamak çıkılıyor; rahat ayakkabı giyin.',
+      'Fuji genellikle sabah daha net görünür, öğleden sonra bulutlanır.',
+      'Fujikyū hattında Shimoyoshida İstasyonu’nda inin, 10 dakika yürüme.',
+    ],
+    duration: '1–1,5 saat',
+    coordinates: { latitude: 35.5012, longitude: 138.8013 },
+  },
+  {
+    id: 'kawaguchiko',
+    name: 'Kawaguchi Gölü',
+    japaneseName: '河口湖',
+    city: 'Fuji',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Mount_Fuji_from_Lake_Kawaguchi_s2.jpg/960px-Mount_Fuji_from_Lake_Kawaguchi_s2.jpg',
+      author: 'Alpsdake',
+      license: 'CC BY-SA 4.0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mount_Fuji_from_Lake_Kawaguchi_s2.jpg',
+    },
+    color: '#3D6E99',
+    summary: 'Fuji’nin suya yansıdığı, Beş Göl’ün en kolay ulaşılanı.',
+    description:
+      'Fuji Beş Gölü’nün en canlısı; kıyısı oteller, onsenler ve müzelerle çevrilidir. Kuzey kıyısından bakınca Fuji gölün tam karşısında yükselir; sakin sabahlarda dağ suya yansır.',
+    tips: [
+      'En güzel manzara kuzey kıyıdaki Ōishi Parkı’ndan; yazın lavanta tarlaları da var.',
+      'Kachi Kachi teleferiğiyle tepeye çıkıp göl ve Fuji’yi birlikte görün.',
+      'Tokyo’dan direkt otobüsle yaklaşık 2 saat.',
+    ],
+    duration: 'Yarım gün',
+    coordinates: { latitude: 35.5167, longitude: 138.7514 },
+  },
+  {
+    id: 'oshino-hakkai',
+    name: 'Oshino Hakkai',
+    japaneseName: '忍野八海',
+    city: 'Fuji',
+    category: 'Doğa',
+    image: {
+      uri: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Oshino_Hakkai_-_Oshino6874.jpg/960px-Oshino_Hakkai_-_Oshino6874.jpg',
+      author: 'lumoplank',
+      license: 'CC0',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Oshino_Hakkai_-_Oshino6874.jpg',
+    },
+    color: '#3E7F7A',
+    summary: 'Fuji’nin kar sularıyla dolan kristal berraklığında sekiz havuz.',
+    description:
+      'Fuji Dağı’nın erimiş kar suları yıllarca volkanik kayaların arasından süzülüp bu köydeki sekiz kaynak havuzunda yeryüzüne çıkar. Su o kadar berraktır ki metrelerce derindeki balıklar ve bitkiler net görünür.',
+    tips: [
+      'Sabah erken gidin; gün içinde tur otobüsleriyle çok kalabalık olur.',
+      'Köydeki tezgâhlarda kaynak suyuyla yapılan tofu ve kusa-mochi’yi deneyin.',
+      'Kawaguchiko’dan otobüsle yaklaşık 30 dakika.',
+    ],
+    duration: '1–1,5 saat',
+    coordinates: { latitude: 35.46, longitude: 138.8333 },
   },
 ];
 
