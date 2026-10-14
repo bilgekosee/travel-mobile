@@ -1,23 +1,29 @@
-// Şehir sayfası: fotoğraf, hızlı bilgi, yerler (kategori filtreli), 1 günlük rota, yemekler, pratik bilgiler.
+// Şehir sayfası: fotoğraf, hızlı bilgi, yerler (kategori filtreli), 1 günlük rota, yemekler, alışveriş, pratik bilgiler.
 // Keşfet sekmesinin Stack'i içinde açılır (sekme çubuğu görünür kalır). Adres: /city/kyoto
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
 
 import { Chip } from '@/components/chip';
-import { DayPlan, FoodList, QuickFacts, Section, TipList } from '@/components/city-guide';
+import { DayPlan, FoodList, QuickFacts, Section, ShopList, TipList } from '@/components/city-guide';
 import { PhotoCredit } from '@/components/photo-credit';
 import { PlaceCard } from '@/components/place-card';
+import { ScrollOffsetContext } from '@/components/rail-divider';
 import { serifText } from '@/constants/fonts';
 import { getCityGuide } from '@/data/city-guides';
 import { getCity, getPlacesInCity, Place } from '@/data/places';
+import { getShopsInCity } from '@/data/shops';
 
 export default function CityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const city = getCity(id);
   const guide = getCityGuide(id);
   const [category, setCategory] = useState<Place['category'] | null>(null);
+  // Sayfanın ne kadar kaydırıldığı, UI thread'de güncellenir. Tren yolları ekrana girince treni yola çıkarmak için okur.
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollOffset(scrollRef);
 
   if (!city) {
     return (
@@ -32,10 +38,15 @@ export default function CityScreen() {
   const categories = [...new Set(cityPlaces.map((p) => p.category))];
   const countOf = (c: Place['category']) => cityPlaces.filter((p) => p.category === c).length;
   const places = category ? cityPlaces.filter((p) => p.category === category) : cityPlaces;
+  const shops = getShopsInCity(city.name);
 
   return (
     // Şehir başına birkaç yer var; ScrollView yeterli. (Yüzlerce olsaydı FlatList/SectionList kullanırdık.)
-    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.container}>
+    // Animated.ScrollView: Reanimated'in kaydırmayı UI thread'de izleyebilmesi için
+    <Animated.ScrollView
+      ref={scrollRef}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: city.name, headerLargeTitle: false }} />
 
       <View style={styles.hero}>
@@ -81,12 +92,20 @@ export default function CityScreen() {
           <Section title="Ne yenir?">
             <FoodList foods={guide.foods} />
           </Section>
+          {shops.length > 0 && (
+            <Section title="Ne alınır?">
+              {/* Dükkanların arasındaki tren yolları, ekrana girdiklerini anlamak için kaydırma miktarını buradan okur */}
+              <ScrollOffsetContext value={scrollOffset}>
+                <ShopList shops={shops} />
+              </ScrollOffsetContext>
+            </Section>
+          )}
           <Section title="Pratik bilgiler">
             <TipList tips={guide.tips} />
           </Section>
         </>
       )}
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }
 
