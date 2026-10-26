@@ -176,8 +176,11 @@ export function removeStayFile(dayId: string, file: Attachment) {
   mapDay(dayId, (day) => ({ ...day, stayFiles: day.stayFiles?.filter((f) => f.id !== file.id) }));
 }
 
+// Aynı tarihte iki gün olmasın (addDay'deki kural): tarih başka bir güne aitse değiştirmez, false döner
 export function setDayDate(dayId: string, date: string) {
+  if (days.some((day) => day.id !== dayId && day.date === date)) return false;
   mapDay(dayId, (day) => ({ ...day, date }));
+  return true;
 }
 
 // Boş metin = otel bilgisini sil (ad silinince adres de gider)

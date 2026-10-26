@@ -8,6 +8,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { alertDateTaken } from '@/components/trip-date-picker';
 import { formatDateKey, fromDateKey, setDayDate, toDateKey, type TripDay, useTrip } from '@/hooks/use-trip';
 
 const RED = '#C8102E';
@@ -32,7 +33,12 @@ function Picker({ day }: { day: TripDay }) {
   const [selected, setSelected] = useState(day.date);
 
   function save() {
-    if (selected !== day.date) setDayDate(day.id, selected);
+    // Başka bir güne ait tarih: uyar, sayfa açık kalsın (hemen başka tarih seçilebilsin)
+    if (selected !== day.date && !setDayDate(day.id, selected)) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      alertDateTaken(selected);
+      return;
+    }
     Haptics.selectionAsync();
     router.back();
   }

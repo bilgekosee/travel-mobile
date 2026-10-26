@@ -5,10 +5,15 @@ import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { serifText } from '@/constants/fonts';
-import { fromDateKey, setDayDate, toDateKey } from '@/hooks/use-trip';
+import { formatDateKey, fromDateKey, setDayDate, toDateKey } from '@/hooks/use-trip';
+
+// Seçilen tarih başka bir güne aitse (iOS takvim sayfası da kullanır)
+export function alertDateTaken(date: string) {
+  Alert.alert('Bu tarihte zaten bir gün var', `${formatDateKey(date)} planında başka bir gün olarak duruyor.`);
+}
 
 const RED = '#C8102E';
 
@@ -45,7 +50,8 @@ export function TripDatePicker({ dayId, date, subtitle }: Props) {
           value={value}
           onValueChange={(_, picked) => {
             setAndroidOpen(false);
-            setDayDate(dayId, toDateKey(picked));
+            const key = toDateKey(picked);
+            if (!setDayDate(dayId, key)) alertDateTaken(key);
           }}
           onDismiss={() => setAndroidOpen(false)}
           mode="date"
