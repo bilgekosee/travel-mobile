@@ -30,6 +30,9 @@ export type TripStop = {
   files?: Attachment[]; // Bilet, QR kod, rezervasyon belgesi
 };
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
+// Bir harcama: ne için + kaç yen (tam sayı: yenin kuruşu yok)
+export type Expense = { id: string; label: string; yen: number };
+
 // stay: o gece kalınan yer (otel adı), stayAddress: adresi (taksiciye göstermek için), stayFiles: rezervasyon belgeleri
 export type TripDay = {
   id: string;
@@ -38,7 +41,13 @@ export type TripDay = {
   stay?: string;
   stayAddress?: string;
   stayFiles?: Attachment[];
+  expenses?: Expense[];
 };
+
+// Günün (ya da günlerin) toplam harcaması, yen
+export function totalYen(days: TripDay[]) {
+  return days.reduce((sum, day) => sum + (day.expenses ?? []).reduce((s, e) => s + e.yen, 0), 0);
+}
 
 const STORAGE_KEY = 'trip';
 
@@ -135,6 +144,15 @@ export function removeDay(dayId: string) {
   deleteAttachmentFiles(day?.stayFiles);
   day?.stops.forEach((s) => deleteAttachmentFiles(s.files));
   update(days.filter((day) => day.id !== dayId));
+}
+
+export function addExpense(dayId: string, label: string, yen: number) {
+  const expense = { id: newId(), label: label.trim() || 'Harcama', yen };
+  mapDay(dayId, (day) => ({ ...day, expenses: [...(day.expenses ?? []), expense] }));
+}
+
+export function removeExpense(dayId: string, expenseId: string) {
+  mapDay(dayId, (day) => ({ ...day, expenses: day.expenses?.filter((e) => e.id !== expenseId) }));
 }
 
 export function addStayFiles(dayId: string, files: Attachment[]) {

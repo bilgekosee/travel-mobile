@@ -12,7 +12,14 @@ import { TripRouteRow } from '@/components/trip-route';
 import { DAY_THEME } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
-import { type FlightLeg, flightSummary, type TripInfo, useTripInfo } from '@/hooks/use-trip-info';
+import {
+  type FlightLeg,
+  flightSummary,
+  formatTry,
+  formatYen,
+  type TripInfo,
+  useTripInfo,
+} from '@/hooks/use-trip-info';
 import {
   addDay,
   daysBetween,
@@ -23,6 +30,7 @@ import {
   removeStop,
   todayKey,
   toggleStopDone,
+  totalYen,
   type TripDay,
   type TripStop,
   useTrip,
@@ -73,13 +81,23 @@ export default function PlanScreen() {
 function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: number) => void }) {
   const today = todayKey();
   const status = tripStatus(days, today);
+  const spent = totalYen(days);
 
   return (
     <>
       <Text style={styles.summary}>{tripSummary(days)}</Text>
-      <View style={styles.status}>
-        <SymbolView name={status.icon} size={14} tintColor={RED} />
-        <Text style={styles.statusText}>{status.text}</Text>
+      <View style={styles.statusRow}>
+        <View style={styles.status}>
+          <SymbolView name={status.icon} size={14} tintColor={RED} />
+          <Text style={styles.statusText}>{status.text}</Text>
+        </View>
+        {/* Toplam harcama: bir şey girildiyse */}
+        {spent > 0 && (
+          <View style={styles.status}>
+            <SymbolView name={{ ios: 'yensign.circle', android: 'payments' }} size={14} tintColor={RED} />
+            <Text style={styles.statusText}>{formatYen(spent)}</Text>
+          </View>
+        )}
       </View>
 
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.departure', android: 'flight_takeoff' } }}>
@@ -214,6 +232,8 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
   const subtitle = [cities, progress].filter(Boolean).join(' · ');
   // Bugünse sıradaki yer: henüz gidilmemiş ilk durak
   const nextStopId = isToday ? stops.find((s) => !s.done)?.id : undefined;
+  const spent = totalYen([day]);
+  const { tryPer100Yen } = useTripInfo();
 
   function remove() {
     // Boş günü sormadan sil; dolu günde onay iste (içindeki yerler de gidecek, geri alınamaz)
@@ -283,6 +303,24 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
           {(day.stayFiles?.length ?? 0) > 0 && (
             <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
           )}
+        </Pressable>
+      </Link>
+
+      {/* Günün harcaması: boşsa soluk davet, doluysa toplam (¥ ve kur girildiyse ₺) */}
+      <Link href={{ pathname: '/day-expenses', params: { day: day.id } }} asChild>
+        <Pressable
+          style={styles.stay}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel={spent > 0 ? `Harcama: ${formatYen(spent)}` : 'Harcama ekle'}>
+          <SymbolView
+            name={{ ios: 'yensign.circle.fill', android: 'payments' }}
+            size={15}
+            tintColor={spent > 0 ? '#4A4A4A' : '#8A847C'}
+          />
+          <Text style={spent > 0 ? styles.stayText : styles.addStopText} numberOfLines={1}>
+            {spent > 0 ? `${formatYen(spent)} ${formatTry(spent, tryPer100Yen)}` : 'Harcama'}
+          </Text>
         </Pressable>
       </Link>
     </View>
@@ -403,14 +441,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 40, ...serifText, color: '#1A1A1A', marginTop: 8 },
   share: { padding: 4, marginTop: 8 },
   summary: { fontSize: 15, color: '#6B6B6B' },
+  // Durum "hapları" yan yana; sığmazsa alt satıra geçer
+  statusRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8, marginBottom: 18 },
   // Durum "hapı": açık kırmızı zemin, kırmızı yazı. Özetin altında, yolun üstünde.
   status: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start', // Satırı doldurmasın, yazı kadar genişlesin
     gap: 6,
-    marginTop: 8,
-    marginBottom: 18,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,

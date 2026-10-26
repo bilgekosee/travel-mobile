@@ -17,7 +17,8 @@ export type Flight = {
 };
 export type FlightLeg = 'outbound' | 'return'; // Gidiş / dönüş
 
-export type TripInfo = { flights: Record<FlightLeg, Flight> };
+// tryPer100Yen: 100 yen kaç TL (kullanıcı girer; internetsiz çalışsın diye kur çekmiyoruz)
+export type TripInfo = { flights: Record<FlightLeg, Flight>; tryPer100Yen?: number };
 
 const STORAGE_KEY = 'trip-info';
 const EMPTY: TripInfo = { flights: { outbound: {}, return: {} } };
@@ -61,6 +62,10 @@ export function removeFlightFile(leg: FlightLeg, file: Attachment) {
   mapFlight(leg, (flight) => ({ ...flight, files: flight.files?.filter((f) => f.id !== file.id) }));
 }
 
+export function setExchangeRate(tryPer100Yen: number | undefined) {
+  update({ ...info, tryPer100Yen });
+}
+
 // --- Hook ---
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -69,6 +74,16 @@ function subscribe(listener: () => void) {
 
 export function useTripInfo() {
   return useSyncExternalStore(subscribe, () => info);
+}
+
+// "¥12.300" ve kur girildiyse "≈ ₺2.768". Türkçe sayı biçimi: binlik ayıracı nokta.
+export function formatYen(yen: number) {
+  return `¥${yen.toLocaleString('tr-TR')}`;
+}
+
+export function formatTry(yen: number, tryPer100Yen?: number) {
+  if (!tryPer100Yen) return '';
+  return `≈ ₺${Math.round((yen * tryPer100Yen) / 100).toLocaleString('tr-TR')}`;
 }
 
 // "TK 52 · 13:45 · İstanbul → Haneda": dolu alanlardan kısa özet (Planım'daki satır için). Hiçbiri yoksa boş.
