@@ -93,7 +93,7 @@ export default function DayMapScreen() {
                 </Text>
               </View>
               <Text style={styles.cardMeta} numberOfLines={1}>
-                {stop.slot} · {place.item?.label ?? 'Kendi yerin'}
+                {stop.time ?? stop.slot} · {place.item?.label ?? 'Kendi yerin'}
                 {stop.done ? ' · Gidildi ✓' : ''}
               </Text>
               {selected && (

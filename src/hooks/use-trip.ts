@@ -7,7 +7,7 @@ import 'expo-sqlite/localStorage/install';
 
 import { useSyncExternalStore } from 'react';
 
-import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
+import { DAY_SLOTS, type DaySlot, slotForTime } from '@/constants/day-slots';
 import type { Coordinates } from '@/data/places';
 
 // Uygulamanın listesinde olmayan, kullanıcının kendi eklediği yer (arkadaşın önerdiği izakaya gibi)
@@ -24,6 +24,7 @@ export type TripStop = {
   done?: boolean;
   note?: string;
   custom?: CustomPlace;
+  time?: string; // "10:30": bilet, rezervasyon gibi belli saati olan duraklar
 };
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
 // stay: o gece kalınan yer (otel adı)
@@ -68,9 +69,12 @@ export function daysBetween(from: string, to: string) {
   return Math.round((fromDateKey(to).getTime() - fromDateKey(from).getTime()) / 86_400_000);
 }
 
-// Günün durakları Sabah → Öğle → Akşam sırasıyla; aynı dilim içinde eklenme sırası korunur
+// Günün durakları Sabah → Öğle → Akşam sırasıyla. Dilim içinde saati olanlar saat sırasıyla önde,
+// saatsizler arkada (eklenme sırasıyla). "~" rakamlardan sonra sıralanır: saatsizler hep sona düşer.
 export function orderedStops(day: TripDay) {
-  return DAY_SLOTS.flatMap((slot) => day.stops.filter((s) => s.slot === slot));
+  return DAY_SLOTS.flatMap((slot) =>
+    day.stops.filter((s) => s.slot === slot).sort((a, b) => (a.time ?? '~').localeCompare(b.time ?? '~')),
+  );
 }
 
 // Kısa, büyük ihtimalle benzersiz bir id: zaman damgası + rastgele 4 karakter
@@ -165,6 +169,11 @@ export function toggleStopDone(stopId: string) {
   mapStop(stopId, (stop) => ({ ...stop, done: !stop.done }));
 }
 
+// Saat ver ya da sil (undefined). Saat girilince durak o saatin dilimine geçer (10:00 → Sabah).
+export function setStopTime(stopId: string, time: string | undefined) {
+  mapStop(stopId, (stop) => ({ ...stop, time, slot: time ? slotForTime(time) : stop.slot }));
+}
+
 export function setStopNote(stopId: string, note: string) {
   mapStop(stopId, (stop) => ({ ...stop, note: note || undefined }));
 }
@@ -180,7 +189,9 @@ export function moveStop(stopId: string, toDayId: string, slot: DaySlot) {
   update(
     days.map((day) => {
       const stops = day.stops.filter((s) => s.id !== stopId); // Önce olduğu yerden çıkar…
-      return day.id === toDayId ? { ...day, stops: [...stops, { ...stop, slot }] } : { ...day, stops }; // …hedefin sonuna ekle
+      // Saat yeni dilimle çelişiyorsa sil (10:00'daki durak Akşam'a taşındıysa)
+      const time = stop.time && slotForTime(stop.time) === slot ? stop.time : undefined;
+      return day.id === toDayId ? { ...day, stops: [...stops, { ...stop, slot, time }] } : { ...day, stops }; // …hedefin sonuna ekle
     }),
   );
   return true;

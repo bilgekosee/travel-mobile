@@ -161,7 +161,8 @@ function shareText(days: TripDay[]) {
       const place = placeOf(stop);
       if (!place) continue;
       const note = stop.note?.trim() ? ` (${stop.note.trim()})` : '';
-      lines.push(`${DAY_THEME[stop.slot].emoji} ${place.name}${note}${stop.done ? ' ✓' : ''}`);
+      const time = stop.time ? `${stop.time} ` : '';
+      lines.push(`${DAY_THEME[stop.slot].emoji} ${time}${place.name}${note}${stop.done ? ' ✓' : ''}`);
     }
     if (day.stay) lines.push(`🛏 ${day.stay}`);
   });
@@ -301,6 +302,7 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
         accessibilityActions={[{ name: 'remove', label: 'Plandan çıkar' }]}
         onAccessibilityAction={(e) => e.nativeEvent.actionName === 'remove' && remove()}>
         <SymbolView name={theme.icon} size={15} tintColor={theme.color} style={stop.done && styles.faded} />
+        {stop.time && <Text style={[styles.stopTime, stop.done && styles.stopNameDone]}>{stop.time}</Text>}
         <View style={styles.stopText}>
           <Text style={[styles.stopName, stop.done && styles.stopNameDone]} numberOfLines={1}>
             {place.name}
@@ -387,6 +389,8 @@ const styles = StyleSheet.create({
   stopPressed: { opacity: 0.5 },
   stopText: { flex: 1 },
   stopName: { fontSize: 16, color: '#1A1A1A' },
+  // tabular-nums: rakamlar eşit genişlikte, alt alta saatler hizalı durur
+  stopTime: { fontSize: 15, fontWeight: '600', color: '#1A1A1A', fontVariant: ['tabular-nums'] },
   stopNameDone: { color: '#9A948C' }, // Gidildi: soluk ama okunur (üstünü çizmiyoruz, ad hâlâ işe yarayabilir)
   stopNote: { fontSize: 13, color: '#6B6B6B', marginTop: 1 },
   faded: { opacity: 0.45 },

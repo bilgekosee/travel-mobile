@@ -9,6 +9,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 
 import { AutoSaveInput } from '@/components/auto-save-input';
 import { SlotChip } from '@/components/slot-chip';
+import { StopTimePicker } from '@/components/stop-time-picker';
 import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
 import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
@@ -158,7 +159,7 @@ export default function StopScreen() {
       <AutoSaveInput
         initial={stop.note ?? ''}
         onSave={(note) => setStopNote(stop.id, note)}
-        placeholder="Ör. Bilet 10:00, rezervasyon no, kimle buluşulacak…"
+        placeholder="Ör. Rezervasyon no, giriş ücreti, kimle buluşulacak…"
         placeholderTextColor="#8A847C"
         style={styles.note}
         multiline
@@ -190,6 +191,7 @@ export default function StopScreen() {
           <SlotChip key={s} slot={s} selected={s === stop.slot} onPress={() => move(day.id, s)} />
         ))}
       </View>
+      <StopTimePicker stopId={stop.id} time={stop.time} slot={stop.slot} />
 
       <View style={styles.actions}>
         {item && (
