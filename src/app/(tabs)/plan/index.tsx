@@ -5,8 +5,9 @@ import * as Haptics from 'expo-haptics';
 import { Link, router, Stack } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useRef } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { PlanMenu, restoreFromBackup } from '@/components/plan-menu';
 import { TripDatePicker } from '@/components/trip-date-picker';
 import { TripRouteRow } from '@/components/trip-route';
 import { DAY_THEME } from '@/constants/day-slots';
@@ -63,16 +64,8 @@ export default function PlanScreen() {
         <Text style={styles.title} maxFontSizeMultiplier={1.4}>
           Planım
         </Text>
-        {days.length > 0 && (
-          <Pressable
-            onPress={() => Share.share({ message: shareText(days, info) })} // Telefonun kendi paylaşım menüsü (webdeki navigator.share)
-            hitSlop={12}
-            style={styles.share}
-            accessibilityRole="button"
-            accessibilityLabel="Planı paylaş">
-            <SymbolView name={{ ios: 'square.and.arrow.up', android: 'share' }} size={22} tintColor={RED} />
-          </Pressable>
-        )}
+        {/* ⋯ menüsü: metin olarak paylaş, yedek al, yedekten geri yükle */}
+        {days.length > 0 && <PlanMenu shareText={() => shareText(days, info)} />}
       </View>
 
       {days.length === 0 ? <EmptyPlan /> : <Trip days={days} onTodayLayout={scrollToToday} />}
@@ -516,6 +509,10 @@ function EmptyPlan() {
       <Pressable style={styles.button} onPress={() => addDay()} accessibilityRole="button">
         <Text style={styles.buttonText}>İlk günü ekle</Text>
       </Pressable>
+      {/* Yeni telefonda ya da uygulamayı yeniden kurunca: planı yedekten geri getir */}
+      <Pressable style={styles.restore} onPress={restoreFromBackup} accessibilityRole="button">
+        <Text style={styles.restoreText}>Yedekten geri yükle</Text>
+      </Pressable>
     </View>
   );
 }
@@ -524,7 +521,8 @@ const styles = StyleSheet.create({
   container: { padding: 16, paddingTop: 12, paddingBottom: 32 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: 40, ...serifText, color: '#1A1A1A', marginTop: 8 },
-  share: { padding: 4, marginTop: 8 },
+  restore: { minHeight: 44, justifyContent: 'center' },
+  restoreText: { fontSize: 16, fontWeight: '600', color: RED },
   summary: { fontSize: 15, color: '#6B6B6B' },
   // Durum "hapları" yan yana; sığmazsa alt satıra geçer
   statusRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8, marginBottom: 18 },
