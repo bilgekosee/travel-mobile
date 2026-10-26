@@ -12,6 +12,7 @@ import { TripRouteRow } from '@/components/trip-route';
 import { DAY_THEME } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
+import { type FlightLeg, flightSummary, type TripInfo, useTripInfo } from '@/hooks/use-trip-info';
 import {
   addDay,
   daysBetween,
@@ -31,6 +32,7 @@ const RED = '#C8102E';
 
 export default function PlanScreen() {
   const days = useTrip();
+  const info = useTripInfo();
   // ref: ScrollView'un kendi metodunu (scrollTo) çağırmak için (webde bir DOM öğesine ref verip scrollTo çağırmak gibi)
   const scrollRef = useRef<ScrollView>(null);
   // Bugüne bir kez kaydır: sonra kullanıcı gezinirken sayfa kendi kendine zıplamasın
@@ -53,7 +55,7 @@ export default function PlanScreen() {
         </Text>
         {days.length > 0 && (
           <Pressable
-            onPress={() => Share.share({ message: shareText(days) })} // Telefonun kendi paylaşım menüsü (webdeki navigator.share)
+            onPress={() => Share.share({ message: shareText(days, info) })} // Telefonun kendi paylaşım menüsü (webdeki navigator.share)
             hitSlop={12}
             style={styles.share}
             accessibilityRole="button"
@@ -81,7 +83,7 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
       </View>
 
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.departure', android: 'flight_takeoff' } }}>
-        <Text style={styles.endpoint}>Kalkış</Text>
+        <FlightRow leg="outbound" />
       </TripRouteRow>
 
       {days.map((day, i) => {
@@ -104,9 +106,35 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
       </TripRouteRow>
 
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.arrival', android: 'flight_land' } }} isLast>
-        <Text style={styles.endpoint}>Dönüş</Text>
+        <FlightRow leg="return" />
       </TripRouteRow>
     </>
+  );
+}
+
+// Kalkış / Dönüş: dokununca uçuş sayfası. Altında uçuş özeti ya da soluk bir davet.
+function FlightRow({ leg }: { leg: FlightLeg }) {
+  const flight = useTripInfo().flights[leg];
+  const summary = flightSummary(flight);
+  const label = leg === 'outbound' ? 'Kalkış' : 'Dönüş';
+
+  return (
+    <Link href={{ pathname: '/flight', params: { leg } }} asChild>
+      <Pressable
+        style={({ pressed }) => [styles.flight, pressed && styles.stopPressed]}
+        accessibilityRole="button"
+        accessibilityLabel={summary ? `${label}: ${summary}` : `${label}: uçuş bilgisi ekle`}>
+        <Text style={styles.endpoint}>{label}</Text>
+        <View style={styles.stopNameRow}>
+          <Text style={summary ? styles.flightSummary : styles.addStopText} numberOfLines={1}>
+            {summary || 'Uçuş bilgisi ekle'}
+          </Text>
+          {(flight.files?.length ?? 0) > 0 && (
+            <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
+          )}
+        </View>
+      </Pressable>
+    </Link>
   );
 }
 
@@ -153,8 +181,10 @@ function tripStatus(days: TripDay[], today: string) {
 }
 
 // Planın düz metin hali: WhatsApp'a, notlara yapıştırılabilir
-function shareText(days: TripDay[]) {
+function shareText(days: TripDay[], info: TripInfo) {
   const lines = [`🇯🇵 Japonya gezim · ${tripSummary(days)}`];
+  const outbound = flightSummary(info.flights.outbound);
+  if (outbound) lines.push(`🛫 ${outbound}`);
   days.forEach((day, i) => {
     lines.push('', `${i + 1}. gün · ${formatDateKey(day.date)}`);
     for (const stop of orderedStops(day)) {
@@ -166,6 +196,8 @@ function shareText(days: TripDay[]) {
     }
     if (day.stay) lines.push(`🛏 ${day.stay}`);
   });
+  const back = flightSummary(info.flights.return);
+  if (back) lines.push('', `🛬 ${back}`);
   return lines.join('\n');
 }
 
@@ -382,6 +414,8 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 14, fontWeight: '600', color: RED },
   endpoint: { fontSize: 17, fontWeight: '700', color: '#1A1A1A', marginTop: 4 },
+  flight: { alignSelf: 'stretch', gap: 2 },
+  flightSummary: { fontSize: 15, color: '#4A4A4A', flexShrink: 1 },
   addDay: { minHeight: 30, justifyContent: 'center', alignSelf: 'flex-start' },
   addDayText: { fontSize: 16, fontWeight: '600', color: RED },
 
