@@ -8,18 +8,11 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions
 import { CityCard } from '@/components/city-card';
 import { PlaceCard } from '@/components/place-card';
 import { serifText } from '@/constants/fonts';
+import { normalize } from '@/constants/search';
 import { CITIES, getPlacesInCity, PLACES } from '@/data/places';
 
 const PADDING = 20;
 const GAP = 12;
-
-// Aramayı esnek yapmak için: küçük harfe çevir ve aksanları at ("Sensō-ji" → "senso-ji", "İ" → "i").
-function normalize(text: string) {
-  return text
-    .toLocaleLowerCase('tr')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}
 
 export default function HomeScreen() {
   const [query, setQuery] = useState('');
