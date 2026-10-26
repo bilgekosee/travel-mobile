@@ -10,7 +10,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 
 import { Chip } from '@/components/chip';
 import { serifText } from '@/constants/fonts';
-import { EMERGENCY, ETIQUETTE, PHRASE_GROUPS, type Tip, TRANSPORT } from '@/data/guide';
+import { EMERGENCY, EMERGENCY_TIPS, ETIQUETTE, PHRASE_GROUPS, type Tip, TRANSPORT } from '@/data/guide';
 
 const RED = '#C8102E';
 
@@ -155,6 +155,15 @@ function Emergency() {
         Japonca bilmesen de 110 ve 119’da İngilizce yardım istenebilir. Adresini söyleyemiyorsan “Taksiciye göster”
         ekranındaki Japonca adresi oku ya da yakındaki birinden yardım iste.
       </Text>
+
+      {/* Numaraların altında: acil durumda ne yapılır (deprem başta) */}
+      <View style={styles.groupHeader}>
+        <SymbolView name={{ ios: 'exclamationmark.triangle.fill', android: 'warning' }} size={16} tintColor={RED} />
+        <Text style={styles.groupTitle} accessibilityRole="header">
+          Ne yapmalı?
+        </Text>
+      </View>
+      <Tips tips={EMERGENCY_TIPS} />
     </View>
   );
 }

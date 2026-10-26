@@ -106,6 +106,17 @@ export const ETIQUETTE: Tip[] = [
   { title: 'Çöp', text: 'Sokakta çöp kutusu az. Çöpünü yanında taşı; konbini ve otelde ayrıştırarak at.' },
   { title: 'Onsen', text: 'Girmeden önce oturarak duş al, havluyu suya sokma. Bazı onsenler dövmeli misafiri almıyor.' },
   { title: 'Sıra', text: 'Peronda yerdeki işaretlerin önünde sıraya girilir; inenler beklenir.' },
+  {
+    title: 'Yemek çubukları',
+    text: 'Çubuğu pirince dik saplama, çubuktan çubuğa yemek verme: ikisi de cenaze törenini çağrıştırır. Ramen’i höpürdetmek ise normal.',
+  },
+  { title: 'Ödeme', text: 'Kasada para elden verilmez, tezgâhtaki küçük tepsiye konur. Para üstü de oraya gelir.' },
+  { title: 'Sigara', text: 'Tokyo ve Kyoto’nun birçok semtinde sokakta sigara yasak; sadece işaretli sigara alanlarında içilir.' },
+  {
+    title: 'Fotoğraf',
+    text: 'İnsanları izin almadan çekme. Kyoto Gion’un bazı özel sokaklarında fotoğraf çekmek yasak; tabelalara dikkat et.',
+  },
+  { title: 'Trende çanta', text: 'Kalabalık trende sırt çantası öne, göğse alınır ya da raflara konur.' },
 ];
 
 export const TRANSPORT: Tip[] = [
@@ -116,6 +127,45 @@ export const TRANSPORT: Tip[] = [
   { title: 'Bavul gönderimi', text: 'Takkyubin ile bavulu otelden otele bir günde yollayabilirsin; şehir değiştirirken eller boş kalır.' },
   { title: 'Taksi kapısı', text: 'Arka kapı otomatik açılıp kapanır; kendin açıp kapatma.' },
   { title: 'Konbini', text: '7-Eleven, Lawson, FamilyMart: yemek, ATM (7-Eleven yabancı kartları alır), bilet, kargo.' },
+  {
+    title: 'Çıkış numarası',
+    text: 'Shinjuku, Tokyo gibi dev istasyonlarda yanlış çıkış seni yüzlerce metre öteye çıkarır. Haritada gideceğin çıkışın numarasına bak.',
+  },
+  {
+    title: 'Bakiye yetmezse',
+    text: 'IC kartın bakiyesi çıkışta yetmezse turnike kapanır. Yanındaki ücret tamamlama makinesinde (精算機) yükle, sonra geç.',
+  },
+  {
+    title: 'Shinkansen vagonları',
+    text: 'Rezervasyonlu (指定席) ve rezervasyonsuz (自由席) vagonlar ayrıdır; biletine uygun vagona bin. Peronda vagon numarası yerde yazar.',
+  },
+  { title: 'Kadın vagonu', text: 'Bazı hatlarda hafta içi yoğun saatlerde kadınlara özel vagonlar var (女性専用車); peronda pembe işaretli.' },
+  { title: 'Emanet dolabı', text: 'İstasyonlardaki coin locker’lara bavul bırakılır; çoğu IC kartla açılıp kapanır.' },
+  { title: 'Taksi uygulaması', text: 'Büyük şehirlerde GO ya da Uber ile taksi çağırabilirsin; adresi yazınca şoförle konuşmana gerek kalmaz.' },
+];
+
+// Acil durumda ne yapılır: numaraların altında. Deprem başta: Japonya'da küçük depremler sık.
+export const EMERGENCY_TIPS: Tip[] = [
+  {
+    title: 'Deprem',
+    text: 'Sallanırken masanın altına gir, başını koru. Durunca kapıyı aç (sıkışmasın), asansörü kullanma. Sahildeysen tsunami uyarısında hemen yükseğe çık.',
+  },
+  {
+    title: 'Safety tips uygulaması',
+    text: 'Japonya Turizm Ajansı’nın ücretsiz uygulaması deprem, tsunami ve hava uyarılarını İngilizce bildirir. Yola çıkmadan kur.',
+  },
+  {
+    title: 'Kayıp eşya',
+    text: 'En yakın kōban’a (交番, mahalle polis kulübesi) git. Trende unuttuysan istasyon görevlisine söyle; eşyalar çoğu zaman bulunur.',
+  },
+  {
+    title: 'Pasaport kaybı',
+    text: 'Önce kōban’dan kayıp tutanağı al, sonra T.C. Tokyo Büyükelçiliği’ne başvur. Büyükelçiliğin telefonunu yola çıkmadan not al.',
+  },
+  {
+    title: 'İlaç ve hastane',
+    text: 'Reçetesiz ilaçlar Matsumoto Kiyoshi gibi drugstore’larda. Hastanede sigorta poliçesi istenir: poliçeni ve pasaportunu yanında taşı.',
+  },
 ];
 
 export type Emergency = { label: string; number: string; note: string; icon: SymbolViewProps['name'] };
