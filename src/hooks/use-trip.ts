@@ -8,11 +8,23 @@ import 'expo-sqlite/localStorage/install';
 import { useSyncExternalStore } from 'react';
 
 import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
+import type { Coordinates } from '@/data/places';
+
+// Uygulamanın listesinde olmayan, kullanıcının kendi eklediği yer (arkadaşın önerdiği izakaya gibi)
+export type CustomPlace = { name: string; address?: string; coordinates?: Coordinates };
 
 // Bir durak: kendi id'si + haritadaki biçimde yer id'si ("place-sensoji", "restaurant-…", "shop-…") + günün hangi dilimi.
 // Kendi id'si şart: durak başka güne/dilime taşınabiliyor, "gün + dilim + yer" üçlüsü değişse de aynı durak kalmalı.
 // done/note sonradan eklendi; "?" sayesinde eski kayıtlar da bu tipe uyuyor.
-export type TripStop = { id: string; itemId: string; slot: DaySlot; done?: boolean; note?: string };
+// custom: kendi eklenen yer. O zaman itemId "custom-…" olur ve yerin bilgileri listeden değil buradan okunur.
+export type TripStop = {
+  id: string;
+  itemId: string;
+  slot: DaySlot;
+  done?: boolean;
+  note?: string;
+  custom?: CustomPlace;
+};
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
 // stay: o gece kalınan yer (otel adı)
 export type TripDay = { id: string; date: string; stops: TripStop[]; stay?: string };
@@ -122,6 +134,21 @@ export function addStop(dayId: string, slot: DaySlot, itemId: string) {
       ? day // Aynı yer aynı dilimde zaten varsa tekrar ekleme
       : { ...day, stops: [...day.stops, { id: newId(), slot, itemId }] },
   );
+}
+
+// Kendi yerini ekler; yeni durağın id'sini döndürür (ekledikten hemen sonra durak sayfasını açmak için)
+export function addCustomStop(dayId: string, slot: DaySlot, name: string) {
+  const id = newId();
+  mapDay(dayId, (day) => ({
+    ...day,
+    stops: [...day.stops, { id, itemId: `custom-${id}`, slot, custom: { name: name.trim() } }],
+  }));
+  return id;
+}
+
+// Kendi eklenen yerin adını, adresini ya da konumunu değiştirir (sadece verilen alanlar değişir)
+export function updateCustomPlace(stopId: string, changes: Partial<CustomPlace>) {
+  mapStop(stopId, (stop) => (stop.custom ? { ...stop, custom: { ...stop.custom, ...changes } } : stop));
 }
 
 export function removeStop(stopId: string) {

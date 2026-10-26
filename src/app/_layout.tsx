@@ -55,6 +55,8 @@ export default function RootLayout() {
         <Stack.Screen name="add-stop" options={{ ...SHEET_OPTIONS, title: 'Yer ekle' }} />
         {/* Planım'da bir durağa dokununca: gittim, not, taşıma */}
         <Stack.Screen name="stop" options={{ ...SHEET_OPTIONS, ...SHEET_DONE_OPTIONS, title: 'Durak' }} />
+        {/* Haritadan konum seçme: tam ekran (yarım sayfada harita kaydırmak sayfayı kapatmaya çalışıyordu) */}
+        <Stack.Screen name="pick-location" options={{ presentation: 'fullScreenModal', headerShown: false }} />
         {/* Kalınan yer: küçük bir form, içeriği kadar açılır */}
         <Stack.Screen
           name="day-stay"

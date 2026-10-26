@@ -11,7 +11,8 @@ import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
 import { MAP_KINDS } from '@/constants/map-kinds';
 import { normalize } from '@/constants/search';
 import { MAP_ITEMS, type MapItem } from '@/data/map-items';
-import { addStop, formatDateKey, useTrip } from '@/hooks/use-trip';
+import { CUSTOM_PLACE_THEME, placeOf } from '@/data/plan-place';
+import { addCustomStop, addStop, formatDateKey, useTrip } from '@/hooks/use-trip';
 
 export default function AddStopScreen() {
   const params = useLocalSearchParams<{ day: string; slot?: string }>();
@@ -30,9 +31,7 @@ export default function AddStopScreen() {
   }
 
   // Bu güne daha önce eklenen yerlerin şehirleri: listede önce bunlar gösterilir (bir günde genelde tek şehir gezilir)
-  const dayCities = new Set(
-    day.stops.map((s) => MAP_ITEMS.find((i) => i.id === s.itemId)?.city).filter((c) => c !== undefined),
-  );
+  const dayCities = new Set(day.stops.map((s) => placeOf(s)?.city).filter((c) => c !== undefined));
   const q = normalize(query.trim());
   const results = MAP_ITEMS.filter(
     (item) => !q || normalize(`${item.name} ${item.japaneseName} ${item.city} ${item.label}`).includes(q),
@@ -42,6 +41,14 @@ export default function AddStopScreen() {
     addStop(day!.id, slot, item.id);
     Haptics.selectionAsync();
     router.back();
+  }
+
+  // Listede olmayan yer: aranan adla ekle, sonra durak sayfasını aç (adres ve konum orada girilir).
+  // replace: bu sayfa durak sayfasına dönüşür; kapatınca tekrar "Yer ekle"ye düşülmez (webdeki history.replaceState)
+  function chooseCustom() {
+    const stopId = addCustomStop(day!.id, slot, query);
+    Haptics.selectionAsync();
+    router.replace({ pathname: '/stop', params: { id: stopId } });
   }
 
   return (
@@ -72,7 +79,28 @@ export default function AddStopScreen() {
             returnKeyType="search"
           />
         </View>
+        {/* Arama boşken: kendi yer ekleme özelliğini keşfettirmek için küçük bir ipucu */}
+        {query.trim() === '' && (
+          <Text style={styles.hint}>Aradığın yer listede yok mu? Adını yaz, kendi yerin olarak ekle.</Text>
+        )}
       </View>
+
+      {/* Bir şey yazıldıysa en üstte: "bu adla kendi yerini ekle". Sonuç olsa da gösteriyoruz: aranan yer
+          listedekiyle aynı ad taşıyan başka bir yer olabilir. */}
+      {query.trim() !== '' && (
+        <Pressable onPress={chooseCustom} style={styles.row} accessibilityRole="button">
+          <View style={[styles.kindIcon, { backgroundColor: CUSTOM_PLACE_THEME.color }]}>
+            <SymbolView name={CUSTOM_PLACE_THEME.icon} size={15} tintColor="#FFFFFF" />
+          </View>
+          <View style={styles.rowText}>
+            <Text style={styles.rowTitle} numberOfLines={1}>
+              “{query.trim()}” ekle
+            </Text>
+            <Text style={styles.rowMeta}>Kendi yerin · adres ve konumu sonra girersin</Text>
+          </View>
+          <SymbolView name={{ ios: 'plus', android: 'add' }} size={16} tintColor="#8A847C" />
+        </Pressable>
+      )}
 
       {results.map((item) => {
         const kind = MAP_KINDS[item.kind];
@@ -91,7 +119,7 @@ export default function AddStopScreen() {
           </Pressable>
         );
       })}
-      {results.length === 0 && <Text style={styles.empty}>“{query}” için sonuç bulunamadı.</Text>}
+      {results.length === 0 && <Text style={styles.empty}>Listede “{query.trim()}” yok. Yukarıdan kendin ekleyebilirsin.</Text>}
     </ScrollView>
   );
 }
@@ -115,6 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   searchInput: { flex: 1, fontSize: 16, color: '#1A1A1A' },
+  hint: { fontSize: 13, color: '#6B6B6B', marginBottom: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingVertical: 6 },
   kindIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, gap: 2 },

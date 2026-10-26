@@ -7,10 +7,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 
 import { DAY_THEME } from '@/constants/day-slots';
-import type { MapItem } from '@/data/map-items';
+import type { Coordinates } from '@/data/places';
+import type { PlanPlace } from '@/data/plan-place';
 import type { TripStop } from '@/hooks/use-trip';
 
-export type DayMapStop = { stop: TripStop; item: MapItem; number: number };
+// "&": konumu kesin olan bir PlanPlace (kendi eklenen yerde konum seçilmemişse haritaya konamaz, önceden eleniyor)
+export type DayMapStop = { stop: TripStop; place: PlanPlace & { coordinates: Coordinates }; number: number };
 
 type Props = {
   stops: DayMapStop[];
@@ -21,7 +23,7 @@ type Props = {
 
 export function DayMap({ stops, selectedId, onSelect, edgePadding }: Props) {
   const mapRef = useRef<MapView>(null);
-  const coordinates = stops.map((s) => s.item.coordinates);
+  const coordinates = stops.map((s) => s.place.coordinates);
 
   // Bütün durakları ekrana sığdır
   function fitAll(animated: boolean) {
@@ -32,7 +34,7 @@ export function DayMap({ stops, selectedId, onSelect, edgePadding }: Props) {
   useEffect(() => {
     const selected = stops.find((s) => s.stop.id === selectedId);
     if (!selected) return;
-    mapRef.current?.animateCamera({ center: selected.item.coordinates }, { duration: 400 });
+    mapRef.current?.animateCamera({ center: selected.place.coordinates }, { duration: 400 });
     // stops her çizimde yeni bir dizi; sadece seçim değişince çalışsın
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
@@ -54,7 +56,7 @@ export function DayMap({ stops, selectedId, onSelect, edgePadding }: Props) {
         />
       )}
 
-      {stops.map(({ stop, item, number }) => {
+      {stops.map(({ stop, place, number }) => {
         const color = DAY_THEME[stop.slot].color;
         const selected = stop.id === selectedId;
         return (
@@ -62,12 +64,12 @@ export function DayMap({ stops, selectedId, onSelect, edgePadding }: Props) {
             // tracksViewChanges kapalı: harita pinin görüntüsünü bir kez çizip saklıyor. Seçilince pin büyüdüğü için
             // key'e seçimi de koyuyoruz: key değişince React pini baştan oluşturur, harita da yeniden çizer.
             key={`${stop.id}-${selected}`}
-            coordinate={item.coordinates}
+            coordinate={place.coordinates}
             onPress={() => onSelect(stop.id)}
             stopPropagation
             tracksViewChanges={false}
             zIndex={selected ? 2 : 1} // Seçili pin üst üste binen pinlerin üstünde kalsın
-            accessibilityLabel={`${number}. durak: ${item.name}${stop.done ? ', gidildi' : ''}`}>
+            accessibilityLabel={`${number}. durak: ${place.name}${stop.done ? ', gidildi' : ''}`}>
             <View
               style={[
                 styles.pin,

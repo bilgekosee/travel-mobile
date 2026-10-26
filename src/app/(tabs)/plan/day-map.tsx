@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DayMap, type DayMapStop } from '@/components/day-map';
 import { DAY_THEME } from '@/constants/day-slots';
 import { directionsUrl } from '@/constants/directions';
-import { MAP_ITEMS } from '@/data/map-items';
+import { placeOf } from '@/data/plan-place';
 import { formatDateKey, orderedStops, useTrip } from '@/hooks/use-trip';
 
 const RED = '#C8102E';
@@ -40,8 +40,9 @@ export default function DayMapScreen() {
   // Gidiliş sırası (Sabah → Öğle → Akşam) = pinlerdeki numaralar
   const stops: DayMapStop[] = orderedStops(day)
     .flatMap((stop) => {
-      const item = MAP_ITEMS.find((i) => i.id === stop.itemId);
-      return item ? [{ stop, item }] : []; // Veriden kaldırılmış yeri atla (flatMap: boş dizi = bu elemanı çıkar)
+      const place = placeOf(stop);
+      // Konumu olmayanı atla: veriden kaldırılmış yer ya da konumu seçilmemiş kendi yerin (flatMap: boş dizi = çıkar)
+      return place?.coordinates ? [{ stop, place: { ...place, coordinates: place.coordinates } }] : [];
     })
     .map((s, i) => ({ ...s, number: i + 1 }));
 
@@ -73,7 +74,7 @@ export default function DayMapScreen() {
         contentContainerStyle={styles.cardsContent}
         snapToInterval={CARD_WIDTH + CARD_GAP} // Kaydırma bir kartın başında dursun, yarım kart kalmasın
         decelerationRate="fast">
-        {stops.map(({ stop, item, number }) => {
+        {stops.map(({ stop, place, number }) => {
           const selected = stop.id === selectedId;
           const theme = DAY_THEME[stop.slot];
           return (
@@ -88,16 +89,16 @@ export default function DayMapScreen() {
                   <Text style={styles.badgeText}>{number}</Text>
                 </View>
                 <Text style={styles.cardName} numberOfLines={1}>
-                  {item.name}
+                  {place.name}
                 </Text>
               </View>
               <Text style={styles.cardMeta} numberOfLines={1}>
-                {stop.slot} · {item.label}
+                {stop.slot} · {place.item?.label ?? 'Kendi yerin'}
                 {stop.done ? ' · Gidildi ✓' : ''}
               </Text>
               {selected && (
                 <Pressable
-                  onPress={() => Linking.openURL(directionsUrl(item.coordinates))}
+                  onPress={() => Linking.openURL(directionsUrl(place.coordinates))}
                   style={styles.directions}
                   accessibilityRole="link">
                   <SymbolView

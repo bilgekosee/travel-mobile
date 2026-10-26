@@ -1,23 +1,25 @@
 // Durak sayfası: Planım'da bir yere dokununca alttan açılır. Adres: /stop?id=…
 // Bir durakla ilgili her şey tek yerde: gittim işareti, not, başka güne/dilime taşıma, yeri açma, plandan çıkarma.
-// Kaydet düğmesi yok: her değişiklik anında kaydedilir (iOS'taki Notlar gibi). Aşağı kaydırıp kapatmak yeter.
+// Kendi eklenen yerde ayrıca adı, adresi ve haritadan konumu düzenlenir.
+// Kaydet düğmesi yok: her değişiklik kendiliğinden kaydedilir (iOS'taki Notlar gibi). Aşağı kaydırıp kapatmak yeter.
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AutoSaveInput } from '@/components/auto-save-input';
 import { SlotChip } from '@/components/slot-chip';
 import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
+import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
-import { MAP_KINDS } from '@/constants/map-kinds';
-import { MAP_ITEMS } from '@/data/map-items';
+import { placeOf } from '@/data/plan-place';
 import {
   fromDateKey,
   moveStop,
   removeStop,
   setStopNote,
   toggleStopDone,
+  updateCustomPlace,
   useStop,
   useTrip,
 } from '@/hooks/use-trip';
@@ -28,9 +30,9 @@ export default function StopScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const found = useStop(id);
   const days = useTrip();
-  const item = found && MAP_ITEMS.find((i) => i.id === found.stop.itemId);
+  const place = found && placeOf(found.stop);
 
-  if (!found || !item) {
+  if (!found || !place) {
     return (
       <View style={styles.center}>
         <Text>Durak bulunamadı.</Text>
@@ -38,6 +40,7 @@ export default function StopScreen() {
     );
   }
   const { day, stop } = found;
+  const item = place.item; // Uygulamadaki yerse dolu, kendi yerinse boş
 
   function toggleDone() {
     toggleStopDone(stop.id);
@@ -50,19 +53,20 @@ export default function StopScreen() {
       Haptics.selectionAsync();
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('Zaten planda', `${item!.name} o gün o saatte zaten var.`);
+      Alert.alert('Zaten planda', `${place!.name} o gün o saatte zaten var.`);
     }
   }
 
   // Önce sayfayı kapat, sonra aç: yer sayfası bu yarım sayfanın üstüne değil, Planım'ın üstüne açılsın
   function openItem() {
+    if (!item) return;
     router.back();
-    if (item!.kind === 'place') router.push({ pathname: '/place/[id]', params: { id: item!.sourceId } });
-    else router.push({ pathname: '/map', params: { focus: item!.id } });
+    if (item.kind === 'place') router.push({ pathname: '/place/[id]', params: { id: item.sourceId } });
+    else router.push({ pathname: '/map', params: { focus: item.id } });
   }
 
   function confirmRemove() {
-    Alert.alert(item!.name, 'Plandan çıkarılsın mı? Notun da silinecek.', [
+    Alert.alert(place!.name, 'Plandan çıkarılsın mı? Notun da silinecek.', [
       { text: 'Vazgeç', style: 'cancel' },
       {
         text: 'Plandan çıkar',
@@ -75,8 +79,6 @@ export default function StopScreen() {
     ]);
   }
 
-  const kind = MAP_KINDS[item.kind];
-
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
@@ -86,14 +88,12 @@ export default function StopScreen() {
     >
       {/* Hangi yer? ("Tamam" düğmesi kök _layout'tan geliyor) */}
       <View style={styles.itemRow}>
-        <View style={[styles.kindIcon, { backgroundColor: kind.color }]}>
-          <SymbolView name={kind.icon} size={18} tintColor="#FFFFFF" />
+        <View style={[styles.kindIcon, { backgroundColor: place.color }]}>
+          <SymbolView name={place.icon} size={18} tintColor="#FFFFFF" />
         </View>
         <View style={styles.itemText}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemMeta}>
-            {item.label} · {item.city}
-          </Text>
+          <Text style={styles.itemName}>{place.name}</Text>
+          <Text style={styles.itemMeta}>{place.meta}</Text>
         </View>
       </View>
 
@@ -115,8 +115,55 @@ export default function StopScreen() {
         <Text style={[styles.doneText, stop.done && styles.doneTextOn]}>{stop.done ? 'Gidildi' : 'Gittim'}</Text>
       </Pressable>
 
+      {/* Sadece kendi eklenen yerde: adı, adresi, konumu */}
+      {stop.custom && (
+        <>
+          <Text style={styles.sectionTitle}>Yer</Text>
+          <AutoSaveInput
+            initial={stop.custom.name}
+            // Boş ad kaydetme: plandaki satır isimsiz kalırdı
+            onSave={(name) => name.trim() && updateCustomPlace(stop.id, { name: name.trim() })}
+            placeholder="Yerin adı"
+            placeholderTextColor="#8A847C"
+            style={styles.field}
+          />
+          <AutoSaveInput
+            initial={stop.custom.address ?? ''}
+            onSave={(address) => updateCustomPlace(stop.id, { address: address.trim() || undefined })}
+            placeholder="Adres (Japonca da yazabilirsin)"
+            placeholderTextColor="#8A847C"
+            style={styles.field}
+          />
+          <Pressable
+            onPress={() => router.push({ pathname: '/pick-location', params: { stop: stop.id } })}
+            style={styles.action}
+            accessibilityRole="button">
+            <SymbolView
+              name={
+                stop.custom.coordinates
+                  ? { ios: 'mappin.and.ellipse', android: 'where_to_vote' }
+                  : { ios: 'mappin.circle', android: 'add_location' }
+              }
+              size={20}
+              tintColor={RED}
+            />
+            <Text style={styles.actionText}>
+              {stop.custom.coordinates ? 'Konum seçildi ✓ · Değiştir' : 'Haritadan konum seç'}
+            </Text>
+          </Pressable>
+        </>
+      )}
+
       <Text style={styles.sectionTitle}>Not</Text>
-      <NoteInput stopId={stop.id} initial={stop.note ?? ''} />
+      <AutoSaveInput
+        initial={stop.note ?? ''}
+        onSave={(note) => setStopNote(stop.id, note)}
+        placeholder="Ör. Bilet 10:00, rezervasyon no, kimle buluşulacak…"
+        placeholderTextColor="#8A847C"
+        style={styles.note}
+        multiline
+        textAlignVertical="top" // Android: çok satırlı alanda yazı ortadan değil üstten başlasın
+      />
 
       <Text style={styles.sectionTitle}>Ne zaman</Text>
       {/* Günler yan yana; çoksa yatay kaydırılır. Başka bir güne dokunmak durağı oraya taşır. */}
@@ -145,64 +192,40 @@ export default function StopScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable onPress={openItem} style={styles.action} accessibilityRole="link">
-          <SymbolView
-            name={
-              item.kind === 'place'
-                ? { ios: 'info.circle', android: 'info' }
-                : { ios: 'mappin.circle', android: 'location_on' }
-            }
-            size={20}
-            tintColor={RED}
-          />
-          <Text style={styles.actionText}>{item.kind === 'place' ? 'Yer sayfasını aç' : 'Haritada gör'}</Text>
-        </Pressable>
+        {item && (
+          <Pressable onPress={openItem} style={styles.action} accessibilityRole="link">
+            <SymbolView
+              name={
+                item.kind === 'place'
+                  ? { ios: 'info.circle', android: 'info' }
+                  : { ios: 'mappin.circle', android: 'location_on' }
+              }
+              size={20}
+              tintColor={RED}
+            />
+            <Text style={styles.actionText}>{item.kind === 'place' ? 'Yer sayfasını aç' : 'Haritada gör'}</Text>
+          </Pressable>
+        )}
+        {/* Kendi yerinde detay sayfası yok; konumu seçildiyse doğrudan yol tarifi */}
+        {!item && place.coordinates && (
+          <Pressable
+            onPress={() => Linking.openURL(directionsUrl(place.coordinates!))}
+            style={styles.action}
+            accessibilityRole="link">
+            <SymbolView
+              name={{ ios: 'arrow.triangle.turn.up.right.circle', android: 'directions' }}
+              size={20}
+              tintColor={RED}
+            />
+            <Text style={styles.actionText}>Yol tarifi al</Text>
+          </Pressable>
+        )}
         <Pressable onPress={confirmRemove} style={styles.action} accessibilityRole="button">
           <SymbolView name={{ ios: 'trash', android: 'delete' }} size={20} tintColor={RED} />
           <Text style={styles.actionText}>Plandan çıkar</Text>
         </Pressable>
       </View>
     </ScrollView>
-  );
-}
-
-// Not alanı. Yazı kutunun kendi state'inde: her harf hemen görünür.
-// Kayıt "debounce" ile: her harfte kaydetmek bütün planı veritabanına yazıp planı gösteren her ekranı yeniden
-// çizdiriyordu, yazı takılıyordu. Şimdi yazmaya yarım saniye ara verince, kutudan çıkınca ya da sayfa kapanınca
-// tek seferde kaydediyoruz.
-function NoteInput({ stopId, initial }: { stopId: string; initial: string }) {
-  const [text, setText] = useState(initial);
-  // Ref: değişince ekranın yeniden çizilmesi gerekmeyen değerler (bekleyen zamanlayıcı, kaydedilecek son metin)
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latest = useRef(initial);
-
-  // Bekleyen bir kayıt varsa hemen yap
-  function flush() {
-    if (!timer.current) return;
-    clearTimeout(timer.current);
-    timer.current = null;
-    setStopNote(stopId, latest.current);
-  }
-
-  // Sayfa kapanınca (bileşen ekrandan kalkınca) son yazılanı kaybetme
-  useEffect(() => flush, []); // eslint-disable-line react-hooks/exhaustive-deps -- sadece kapanırken çalışsın
-
-  return (
-    <TextInput
-      value={text}
-      onChangeText={(value) => {
-        setText(value);
-        latest.current = value;
-        if (timer.current) clearTimeout(timer.current); // Her harfte sayacı baştan başlat…
-        timer.current = setTimeout(flush, 500); // …500 ms yeni harf gelmezse kaydet
-      }}
-      onBlur={flush} // Kutudan çıkınca beklemeden kaydet
-      placeholder="Ör. Bilet 10:00, rezervasyon no, kimle buluşulacak…"
-      placeholderTextColor="#8A847C"
-      style={styles.note}
-      multiline
-      textAlignVertical="top" // Android: çok satırlı alanda yazı ortadan değil üstten başlasın
-    />
   );
 }
 
@@ -238,6 +261,15 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginTop: 8,
+  },
+  // Tek satırlık yazı kutusu (yerin adı, adresi)
+  field: {
+    minHeight: 48,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#EFE9E1',
+    fontSize: 16,
+    color: '#1A1A1A',
   },
   note: {
     minHeight: 88,

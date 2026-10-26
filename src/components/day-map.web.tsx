@@ -1,10 +1,11 @@
 // Web sürümü: react-native-maps tarayıcıda çalışmadığı için harita yerine bilgi kutusu (places-map.web.tsx gibi).
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { MapItem } from '@/data/map-items';
+import type { Coordinates } from '@/data/places';
+import type { PlanPlace } from '@/data/plan-place';
 import type { TripStop } from '@/hooks/use-trip';
 
-export type DayMapStop = { stop: TripStop; item: MapItem; number: number };
+export type DayMapStop = { stop: TripStop; place: PlanPlace & { coordinates: Coordinates }; number: number };
 
 type Props = {
   stops: DayMapStop[];

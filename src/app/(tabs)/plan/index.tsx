@@ -11,7 +11,7 @@ import { TripDatePicker } from '@/components/trip-date-picker';
 import { TripRouteRow } from '@/components/trip-route';
 import { DAY_THEME } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
-import { MAP_ITEMS } from '@/data/map-items';
+import { placeOf } from '@/data/plan-place';
 import {
   addDay,
   daysBetween,
@@ -158,10 +158,10 @@ function shareText(days: TripDay[]) {
   days.forEach((day, i) => {
     lines.push('', `${i + 1}. gün · ${formatDateKey(day.date)}`);
     for (const stop of orderedStops(day)) {
-      const item = MAP_ITEMS.find((it) => it.id === stop.itemId);
-      if (!item) continue;
+      const place = placeOf(stop);
+      if (!place) continue;
       const note = stop.note?.trim() ? ` (${stop.note.trim()})` : '';
-      lines.push(`${DAY_THEME[stop.slot].emoji} ${item.name}${note}${stop.done ? ' ✓' : ''}`);
+      lines.push(`${DAY_THEME[stop.slot].emoji} ${place.name}${note}${stop.done ? ' ✓' : ''}`);
     }
     if (day.stay) lines.push(`🛏 ${day.stay}`);
   });
@@ -173,7 +173,7 @@ function shareText(days: TripDay[]) {
 function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isToday: boolean }) {
   // Güne eklenen yerlerin şehirleri: "Kyoto · Nara" (aynı şehir bir kez)
   const cities = [
-    ...new Set(day.stops.map((s) => MAP_ITEMS.find((i) => i.id === s.itemId)?.city).filter(Boolean)),
+    ...new Set(day.stops.map((s) => placeOf(s)?.city).filter(Boolean)),
   ].join(' · ');
   const stops = orderedStops(day);
   const doneCount = stops.filter((s) => s.done).length;
@@ -208,7 +208,8 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
           <TripDatePicker dayId={day.id} date={day.date} subtitle={subtitle} />
         </View>
         <View style={styles.dayActions}>
-          {stops.length > 0 && (
+          {/* Haritada gösterilecek en az bir konum varsa (konumu seçilmemiş kendi yerler sayılmaz) */}
+          {stops.some((s) => placeOf(s)?.coordinates) && (
             <Link href={{ pathname: '/plan/day-map', params: { day: day.id } }} asChild>
               <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel={`${number}. günü haritada gör`}>
                 <SymbolView name={{ ios: 'map', android: 'map' }} size={20} tintColor={RED} />
@@ -255,8 +256,8 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
 // Bir yer: solda dilimin küçük ikonu (yazı yok: doğan güneş / güneş / ay herkesin anladığı semboller), yanında adı
 // ve varsa notu, sağda "gittim" dairesi. Satıra dokununca durak sayfası açılır; basılı tutunca plandan çıkarılır.
 function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: boolean }) {
-  const item = MAP_ITEMS.find((i) => i.id === stop.itemId);
-  if (!item) return null; // Veriden kaldırılmış bir yer: sessizce atla
+  const place = placeOf(stop);
+  if (!place) return null; // Veriden kaldırılmış bir yer: sessizce atla
   const theme = DAY_THEME[stop.slot];
 
   function open() {
@@ -278,7 +279,7 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
 
   function confirmRemove() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // Basılı tutma algılandı
-    Alert.alert(item!.name, undefined, [
+    Alert.alert(place!.name, undefined, [
       { text: 'Plandan çıkar', style: 'destructive', onPress: remove },
       { text: 'Vazgeç', style: 'cancel' },
     ]);
@@ -294,7 +295,7 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
         onLongPress={confirmRemove}
         style={({ pressed }) => [styles.stopMain, pressed && styles.stopPressed]}
         accessibilityRole="button"
-        accessibilityLabel={`${stop.slot}: ${item.name}${isNext ? ', sıradaki' : ''}${note ? `. Not: ${note}` : ''}`}
+        accessibilityLabel={`${stop.slot}: ${place.name}${isNext ? ', sıradaki' : ''}${note ? `. Not: ${note}` : ''}`}
         accessibilityHint="Not, taşıma ve diğer seçenekler"
         // Basılı tutmak VoiceOver'da zor bir hareket: aynı işlemi bir erişilebilirlik eylemi olarak da sunuyoruz
         accessibilityActions={[{ name: 'remove', label: 'Plandan çıkar' }]}
@@ -302,7 +303,7 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
         <SymbolView name={theme.icon} size={15} tintColor={theme.color} style={stop.done && styles.faded} />
         <View style={styles.stopText}>
           <Text style={[styles.stopName, stop.done && styles.stopNameDone]} numberOfLines={1}>
-            {item.name}
+            {place.name}
           </Text>
           {/* note ? … : null — "note && …" boş metinde '' döndürür; React Native onu Text dışında çizemez, hata verir */}
           {note ? (
@@ -321,7 +322,7 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
         style={styles.check}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: !!stop.done }}
-        accessibilityLabel={`${item.name}: gittim`}>
+        accessibilityLabel={`${place.name}: gittim`}>
         <View style={[styles.checkCircle, stop.done && styles.checkCircleDone]}>
           {stop.done && (
             <SymbolView name={{ ios: 'checkmark', android: 'check' }} size={12} weight="bold" tintColor="#FFFFFF" />
