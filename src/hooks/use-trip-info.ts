@@ -20,10 +20,12 @@ export type FlightLeg = 'outbound' | 'return'; // Gidiş / dönüş
 
 // tryPer100Yen: 100 yen kaç TL (kullanıcı girer; internetsiz çalışsın diye kur çekmiyoruz)
 // checklist: hazırlık listesi. Hiç dokunulmadıysa yok → hazır maddeler gösterilir; ilk değişiklikte kaydedilir.
+// lastBackupAt: son yedeğin zamanı (ms); menüde "Son yedek: …" diye hatırlatmak için
 export type TripInfo = {
   flights: Record<FlightLeg, Flight>;
   tryPer100Yen?: number;
   checklist?: ChecklistItem[];
+  lastBackupAt?: number;
 };
 
 const STORAGE_KEY = 'trip-info';
@@ -92,6 +94,20 @@ export function addChecklistItem(text: string) {
 
 export function removeChecklistItem(id: string) {
   mapChecklist((items) => items.filter((item) => item.id !== id));
+}
+
+// Yedekten geri yükleme: bütün bilgiyi değiştirir (eksik alanlar varsayılandan gelir)
+export function replaceTripInfo(next: Partial<TripInfo>) {
+  update({ ...EMPTY, ...next });
+}
+
+export function markBackedUp() {
+  update({ ...info, lastBackupAt: Date.now() });
+}
+
+// Güncel bilgi, hook olmadan (yedek alırken okumak için)
+export function getTripInfo() {
+  return info;
 }
 
 // --- Hook ---

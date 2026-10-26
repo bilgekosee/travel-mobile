@@ -362,6 +362,12 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener); // Bileşen ekrandan kalkınca aboneliği bırak
 }
 
+// Yedekten geri yükleme: bütün planı tek seferde değiştirir. update'ten geçtiği için kaydedilir, ekranlar
+// yenilenir, hatırlatmalar yeniden kurulur. Eski yedekte durak id'si yoksa yüklemedeki gibi verilir.
+export function replaceTrip(next: TripDay[]) {
+  update(next.map((day) => ({ ...day, stops: day.stops.map((s) => (s.id ? s : { ...s, id: newId() })) })));
+}
+
 // Güncel günler, hook olmadan: olay işleyicisinde (onPress) bir değişiklikten hemen sonraki hali okumak için.
 // Ekranda göstermek için değil; bileşenler useTrip kullanır (yoksa değişince yeniden çizilmezler).
 export function getDays() {
