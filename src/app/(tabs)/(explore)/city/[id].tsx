@@ -1,9 +1,10 @@
 // Şehir sayfası: fotoğraf, hızlı bilgi, yerler (kategori filtreli), 1 günlük rota, yemekler, alışveriş, pratik bilgiler.
 // Keşfet sekmesinin Stack'i içinde açılır (sekme çubuğu görünür kalır). Adres: /city/kyoto
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
 
 import { Chip } from '@/components/chip';
@@ -88,6 +89,14 @@ export default function CityScreen() {
         <>
           <Section title={`1 günde ${city.name}`}>
             <DayPlan steps={guide.dayPlan} />
+            {/* Rotayı tek dokunuşla plana yaz: yer sayfasındaki "Plana ekle" düğmesiyle aynı görünüm */}
+            <Pressable
+              onPress={() => router.push({ pathname: '/add-route', params: { city: city.id } })}
+              style={({ pressed }) => [styles.routeButton, pressed && styles.pressed]}
+              accessibilityRole="button">
+              <SymbolView name={{ ios: 'calendar.badge.plus', android: 'calendar_add_on' }} size={18} tintColor="#FFFFFF" />
+              <Text style={styles.routeButtonText}>Bu rotayı plana ekle</Text>
+            </Pressable>
           </Section>
           <Section title="Ne yenir?">
             <FoodList foods={guide.foods} />
@@ -114,6 +123,19 @@ export default function CityScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  // "Bu rotayı plana ekle": add-to-plan-button'daki büyük düğmeyle aynı ölçüler
+  routeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: '#C8102E',
+    marginTop: 10,
+  },
+  routeButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  pressed: { opacity: 0.7 },
   container: { padding: 16, gap: 12, paddingBottom: 32 },
   hero: {
     height: 240,

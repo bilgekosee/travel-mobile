@@ -55,6 +55,8 @@ export default function RootLayout() {
             Tutma çubuğundan yukarı çekilince tam ekran olur. */}
         <Stack.Screen name="add-to-plan" options={{ ...SHEET_OPTIONS, ...SHEET_DONE_OPTIONS, title: 'Plana ekle' }} />
         <Stack.Screen name="add-stop" options={{ ...SHEET_OPTIONS, title: 'Yer ekle' }} />
+        {/* Şehir rehberindeki "1 günde" rotasını plana ekleme */}
+        <Stack.Screen name="add-route" options={{ ...SHEET_OPTIONS, ...SHEET_DONE_OPTIONS, title: 'Rotayı ekle' }} />
         {/* Planım'da bir durağa dokununca: gittim, not, taşıma */}
         <Stack.Screen name="stop" options={{ ...SHEET_OPTIONS, ...SHEET_DONE_OPTIONS, title: 'Durak' }} />
         {/* Günün duraklarını sürükleyerek sıralama: liste kadar açılır. gestureEnabled: false → aşağı çekince

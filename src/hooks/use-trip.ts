@@ -197,6 +197,34 @@ export function addStop(dayId: string, slot: DaySlot, itemId: string) {
   );
 }
 
+// Bir rotanın adımı: uygulamadaki bir yer (itemId) ya da listede olmayan bir adım (name → kendi yerin olarak eklenir)
+export type RouteStep = { slot: DaySlot; itemId?: string; name: string };
+
+// Şehir rehberindeki "1 günde" rotasını bir güne tek seferde ekler (tek kayıt, tek yeniden çizim).
+// Aynı yer (ya da aynı adlı kendi yerin) aynı dilimde zaten varsa atlanır: rota iki kez eklenirse çoğalmaz.
+// Kaç durak eklendiğini döndürür.
+export function addRoute(dayId: string, steps: RouteStep[]) {
+  let added = 0;
+  mapDay(dayId, (day) => {
+    const stops = [...day.stops];
+    for (const step of steps) {
+      const exists = stops.some((s) =>
+        step.itemId ? s.itemId === step.itemId && s.slot === step.slot : s.custom?.name === step.name && s.slot === step.slot,
+      );
+      if (exists) continue;
+      const id = newId();
+      stops.push(
+        step.itemId
+          ? { id, itemId: step.itemId, slot: step.slot }
+          : { id, itemId: `custom-${id}`, slot: step.slot, custom: { name: step.name } },
+      );
+      added++;
+    }
+    return { ...day, stops };
+  });
+  return added;
+}
+
 // Kendi yerini ekler; yeni durağın id'sini döndürür (ekledikten hemen sonra durak sayfasını açmak için)
 export function addCustomStop(dayId: string, slot: DaySlot, name: string) {
   const id = newId();
@@ -332,6 +360,12 @@ export function moveStop(stopId: string, toDayId: string, slot: DaySlot) {
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener); // Bileşen ekrandan kalkınca aboneliği bırak
+}
+
+// Güncel günler, hook olmadan: olay işleyicisinde (onPress) bir değişiklikten hemen sonraki hali okumak için.
+// Ekranda göstermek için değil; bileşenler useTrip kullanır (yoksa değişince yeniden çizilmezler).
+export function getDays() {
+  return days;
 }
 
 // useSyncExternalStore: React'in dışındaki bir veriyi bileşenlere bağlar (webdeki React ile aynı)
