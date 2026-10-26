@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DayMap, type DayMapStop } from '@/components/day-map';
 import { DAY_THEME } from '@/constants/day-slots';
-import { directionsUrl } from '@/constants/directions';
+import { directionsUrl, legSummary } from '@/constants/directions';
 import { placeOf } from '@/data/plan-place';
 import { formatDateKey, orderedStops, useTrip } from '@/hooks/use-trip';
 
@@ -18,7 +18,7 @@ const RED = '#C8102E';
 const TAB_BAR_HEIGHT = 60; // Harita sekmesindeki gibi: kartlar yüzen sekme çubuğunun altında kalmasın
 const CARD_WIDTH = 240;
 const CARD_GAP = 10;
-const CARDS_HEIGHT = 120; // Kart şeridinin yaklaşık yüksekliği: harita pinleri bunun altına düşürmesin
+const CARDS_HEIGHT = 140; // Kart şeridinin yaklaşık yüksekliği: harita pinleri bunun altına düşürmesin
 
 export default function DayMapScreen() {
   const { day: dayId } = useLocalSearchParams<{ day: string }>();
@@ -74,9 +74,12 @@ export default function DayMapScreen() {
         contentContainerStyle={styles.cardsContent}
         snapToInterval={CARD_WIDTH + CARD_GAP} // Kaydırma bir kartın başında dursun, yarım kart kalmasın
         decelerationRate="fast">
-        {stops.map(({ stop, place, number }) => {
+        {stops.map(({ stop, place, number }, i) => {
           const selected = stop.id === selectedId;
           const theme = DAY_THEME[stop.slot];
+          // Bir önceki duraktan bu durağa: mesafe ve yürüme süresi (ilk durakta önceki yok)
+          const previous = i > 0 ? stops[i - 1].place.coordinates : undefined;
+          const leg = previous && legSummary(previous, place.coordinates);
           return (
             <Pressable
               key={stop.id}
@@ -96,9 +99,22 @@ export default function DayMapScreen() {
                 {stop.time ?? stop.slot} · {place.item?.label ?? 'Kendi yerin'}
                 {stop.done ? ' · Gidildi ✓' : ''}
               </Text>
+              {leg && (
+                <View style={styles.leg}>
+                  <SymbolView
+                    name={leg.walk ? { ios: 'figure.walk', android: 'directions_walk' } : { ios: 'tram.fill', android: 'train' }}
+                    size={13}
+                    tintColor="#6B6B6B"
+                  />
+                  <Text style={styles.cardMeta} numberOfLines={1}>
+                    {number - 1}. duraktan {leg.text}
+                  </Text>
+                </View>
+              )}
+              {/* Seçili kartta yol tarifi: önceki duraktan toplu taşımayla; ilk durakta bulunduğun yerden */}
               {selected && (
                 <Pressable
-                  onPress={() => Linking.openURL(directionsUrl(place.coordinates))}
+                  onPress={() => Linking.openURL(directionsUrl(place.coordinates, previous, true))}
                   style={styles.directions}
                   accessibilityRole="link">
                   <SymbolView
@@ -106,7 +122,9 @@ export default function DayMapScreen() {
                     size={18}
                     tintColor={RED}
                   />
-                  <Text style={styles.directionsText}>Yol tarifi</Text>
+                  <Text style={styles.directionsText}>
+                    {previous ? `${number - 1}. duraktan yol tarifi` : 'Yol tarifi'}
+                  </Text>
                 </Pressable>
               )}
             </Pressable>
@@ -137,7 +155,8 @@ const styles = StyleSheet.create({
   badge: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   badgeText: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
   cardName: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
-  cardMeta: { fontSize: 13, color: '#6B6B6B' },
+  cardMeta: { fontSize: 13, color: '#6B6B6B', flexShrink: 1 },
+  leg: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   directions: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, marginTop: 2 },
   directionsText: { fontSize: 15, fontWeight: '600', color: RED },
 });
