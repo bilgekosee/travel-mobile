@@ -2,13 +2,14 @@
 // Japonca ad/adres kocaman, üstünde "Buraya lütfen", altta küçük Türkçe ad (senin kontrolün için).
 // Japonya'da İngilizce/Latin harfli adresi çoğu şoför okuyamıyor; Japonca ad ya da adres işi çözüyor.
 // Adres: /show-driver?text=浅草寺&name=Sensō-ji
+// Rehberdeki ifadeleri göstermek için de kullanılır: plain=1 → "Buraya lütfen" satırı gizlenir.
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ShowDriverScreen() {
-  const { text, name } = useLocalSearchParams<{ text: string; name?: string }>();
+  const { text, name, plain } = useLocalSearchParams<{ text: string; name?: string; plain?: string }>();
   const insets = useSafeAreaInsets();
 
   return (
@@ -23,8 +24,8 @@ export default function ShowDriverScreen() {
       </Pressable>
 
       <View style={styles.body}>
-        {/* "Buraya lütfen" (kibar, taksiye binince söylenen kalıp) */}
-        <Text style={styles.please}>ここまでお願いします</Text>
+        {/* "Buraya lütfen" (kibar, taksiye binince söylenen kalıp). İfade gösterirken gerekmiyor. */}
+        {!plain && <Text style={styles.please}>ここまでお願いします</Text>}
         {/* adjustsFontSizeToFit: uzun adres sığana kadar küçülür, kısa ad kocaman kalır */}
         <Text style={styles.text} adjustsFontSizeToFit numberOfLines={6} minimumFontScale={0.3}>
           {text}
@@ -32,7 +33,9 @@ export default function ShowDriverScreen() {
       </View>
 
       {name ? <Text style={styles.name}>{name}</Text> : null}
-      <Text style={styles.hint}>Bu ekranı şoföre ya da yol sorduğun kişiye göster</Text>
+      <Text style={styles.hint}>
+        {plain ? 'Bu ekranı karşındaki kişiye göster' : 'Bu ekranı şoföre ya da yol sorduğun kişiye göster'}
+      </Text>
     </View>
   );
 }
