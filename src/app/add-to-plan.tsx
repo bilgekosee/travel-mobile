@@ -3,14 +3,14 @@
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SlotChip } from '@/components/slot-chip';
 import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
 import { MAP_KINDS } from '@/constants/map-kinds';
 import { MAP_ITEMS } from '@/data/map-items';
-import { addDay, addStop, formatDateKey, removeStop, type TripDay, useTrip } from '@/hooks/use-trip';
+import { addDay, addStop, formatDateKey, hasMemory, removeStop, type TripDay, useTrip } from '@/hooks/use-trip';
 
 const RED = '#C8102E';
 
@@ -30,9 +30,23 @@ export default function AddToPlanScreen() {
   // Seçiliyse çıkar, değilse ekle
   function toggle(day: TripDay, slot: DaySlot) {
     const existing = day.stops.find((s) => s.slot === slot && s.itemId === itemId);
-    if (existing) removeStop(existing.id);
-    else addStop(day.id, slot, itemId);
-    Haptics.selectionAsync(); // Seçim değişti: hafif bir "tık"
+    if (!existing) {
+      addStop(day.id, slot, itemId);
+      Haptics.selectionAsync(); // Seçim değişti: hafif bir "tık"
+      return;
+    }
+    // Durakta kaybolacak bir şey varsa (not, belge, anı) önce sor: çip hafif bir seçici gibi görünüyor,
+    // ama çıkarmak belgelerin dosyalarını da telefondan siler. Boş durak tek dokunuşla çıkar.
+    const hasContent = !!existing.note?.trim() || (existing.files?.length ?? 0) > 0 || hasMemory(existing);
+    if (!hasContent) {
+      removeStop(existing.id);
+      Haptics.selectionAsync();
+      return;
+    }
+    Alert.alert(`${item!.name} bu günden çıkarılsın mı?`, 'Notu, belgeleri ve anısı da silinecek.', [
+      { text: 'Vazgeç', style: 'cancel' },
+      { text: 'Çıkar', style: 'destructive', onPress: () => removeStop(existing.id) },
+    ]);
   }
 
   return (
