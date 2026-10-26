@@ -315,9 +315,11 @@ export function moveStop(stopId: string, toDayId: string, slot: DaySlot) {
   update(
     days.map((day) => {
       const stops = day.stops.filter((s) => s.id !== stopId); // Önce olduğu yerden çıkar…
-      // Saat yeni dilimle çelişiyorsa sil (10:00'daki durak Akşam'a taşındıysa)
+      // Saat yeni dilimle çelişiyorsa sil (10:00'daki durak Akşam'a taşındıysa); saatle birlikte hatırlatma da gider,
+      // yoksa sonra yeni saat verilince eski hatırlatma kendiliğinden geri gelirdi (setStopTime'daki kural)
       const time = stop.time && slotForTime(stop.time) === slot ? stop.time : undefined;
-      return day.id === toDayId ? { ...day, stops: [...stops, { ...stop, slot, time }] } : { ...day, stops }; // …hedefin sonuna ekle
+      const moved = { ...stop, slot, time, remindBefore: time ? stop.remindBefore : undefined };
+      return day.id === toDayId ? { ...day, stops: [...stops, moved] } : { ...day, stops }; // …hedefin sonuna ekle
     }),
   );
   return true;
