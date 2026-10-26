@@ -15,9 +15,10 @@ type Props = {
   files?: Attachment[];
   onAdd: (files: Attachment[]) => void;
   onRemove: (file: Attachment) => void;
+  photosOnly?: boolean; // Anı fotoğrafları: "+ PDF" düğmesi gösterilmez
 };
 
-export function AttachmentList({ files = [], onAdd, onRemove }: Props) {
+export function AttachmentList({ files = [], onAdd, onRemove, photosOnly }: Props) {
   async function add(pick: () => Promise<Attachment[]>) {
     try {
       const picked = await pick();
@@ -72,10 +73,12 @@ export function AttachmentList({ files = [], onAdd, onRemove }: Props) {
         <SymbolView name={{ ios: 'photo.badge.plus', android: 'add_photo_alternate' }} size={24} tintColor={RED} />
         <Text style={styles.addText}>Fotoğraf</Text>
       </Pressable>
-      <Pressable onPress={() => add(pickPdfs)} style={[styles.tile, styles.add]} accessibilityRole="button">
-        <SymbolView name={{ ios: 'doc.badge.plus', android: 'note_add' }} size={24} tintColor={RED} />
-        <Text style={styles.addText}>PDF</Text>
-      </Pressable>
+      {!photosOnly && (
+        <Pressable onPress={() => add(pickPdfs)} style={[styles.tile, styles.add]} accessibilityRole="button">
+          <SymbolView name={{ ios: 'doc.badge.plus', android: 'note_add' }} size={24} tintColor={RED} />
+          <Text style={styles.addText}>PDF</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }

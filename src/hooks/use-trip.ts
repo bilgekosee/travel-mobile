@@ -28,7 +28,17 @@ export type TripStop = {
   time?: string; // "10:30": bilet, rezervasyon gibi belli saati olan duraklar
   remindBefore?: number; // Saatinden kaç dakika önce bildirim gelsin (yoksa hatırlatma kapalı)
   files?: Attachment[]; // Bilet, QR kod, rezervasyon belgesi
+  memory?: Memory; // Gidildikten sonra: his, kısa not, fotoğraflar (gezi defteri)
 };
+
+export const MOODS = ['😍', '🙂', '😐'] as const;
+export type Memory = { mood?: (typeof MOODS)[number]; text?: string; photos?: Attachment[] };
+
+// Defterde gösterilecek bir şeyi var mı?
+export function hasMemory(stop: TripStop) {
+  const m = stop.memory;
+  return !!(m && (m.mood || m.text?.trim() || m.photos?.length));
+}
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
 // Bir harcama: ne için + kaç yen (tam sayı: yenin kuruşu yok)
 export type Expense = { id: string; label: string; yen: number };
@@ -141,7 +151,10 @@ export function removeDay(dayId: string) {
   // Günle birlikte giden belgelerin dosyalarını da sil (otel belgesi + durakların belgeleri)
   const day = days.find((d) => d.id === dayId);
   deleteAttachmentFiles(day?.stayFiles);
-  day?.stops.forEach((s) => deleteAttachmentFiles(s.files));
+  day?.stops.forEach((s) => {
+    deleteAttachmentFiles(s.files);
+    deleteAttachmentFiles(s.memory?.photos);
+  });
   update(days.filter((day) => day.id !== dayId));
 }
 
@@ -197,8 +210,30 @@ export function updateCustomPlace(stopId: string, changes: Partial<CustomPlace>)
 }
 
 export function removeStop(stopId: string) {
-  deleteAttachmentFiles(days.flatMap((day) => day.stops).find((s) => s.id === stopId)?.files);
+  const stop = days.flatMap((day) => day.stops).find((s) => s.id === stopId);
+  deleteAttachmentFiles(stop?.files);
+  deleteAttachmentFiles(stop?.memory?.photos);
   update(days.map((day) => ({ ...day, stops: day.stops.filter((s) => s.id !== stopId) })));
+}
+
+// Anının sadece verilen alanları değişir (his, not)
+export function updateMemory(stopId: string, changes: Omit<Memory, 'photos'>) {
+  mapStop(stopId, (stop) => ({ ...stop, memory: { ...stop.memory, ...changes } }));
+}
+
+export function addMemoryPhotos(stopId: string, photos: Attachment[]) {
+  mapStop(stopId, (stop) => ({
+    ...stop,
+    memory: { ...stop.memory, photos: [...(stop.memory?.photos ?? []), ...photos] },
+  }));
+}
+
+export function removeMemoryPhoto(stopId: string, photo: Attachment) {
+  deleteAttachmentFiles([photo]);
+  mapStop(stopId, (stop) => ({
+    ...stop,
+    memory: { ...stop.memory, photos: stop.memory?.photos?.filter((p) => p.id !== photo.id) },
+  }));
 }
 
 export function addStopFiles(stopId: string, files: Attachment[]) {

@@ -18,11 +18,15 @@ import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
 import {
+  addMemoryPhotos,
   addStopFiles,
   fromDateKey,
+  MOODS,
   moveStop,
+  removeMemoryPhoto,
   removeStop,
   removeStopFile,
+  updateMemory,
   setStopNote,
   toggleStopDone,
   updateCustomPlace,
@@ -72,7 +76,7 @@ export default function StopScreen() {
   }
 
   function confirmRemove() {
-    Alert.alert(place!.name, 'Plandan çıkarılsın mı? Notu ve belgeleri de silinecek.', [
+    Alert.alert(place!.name, 'Plandan çıkarılsın mı? Notu, belgeleri ve anısı da silinecek.', [
       { text: 'Vazgeç', style: 'cancel' },
       {
         text: 'Plandan çıkar',
@@ -120,6 +124,47 @@ export default function StopScreen() {
         />
         <Text style={[styles.doneText, stop.done && styles.doneTextOn]}>{stop.done ? 'Gidildi' : 'Gittim'}</Text>
       </Pressable>
+
+      {/* Anı: gidildikten sonra açılır, "Gittim"in hemen altında. Gezi defterinde toplanır. */}
+      {stop.done && (
+        <>
+          <Text style={styles.sectionTitle}>Anı</Text>
+          <View style={styles.moods}>
+            {MOODS.map((mood) => {
+              const selected = stop.memory?.mood === mood;
+              return (
+                <Pressable
+                  key={mood}
+                  // Seçiliye tekrar dokunmak seçimi kaldırır
+                  onPress={() => {
+                    updateMemory(stop.id, { mood: selected ? undefined : mood });
+                    Haptics.selectionAsync();
+                  }}
+                  style={[styles.mood, selected && styles.moodOn]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}>
+                  <Text style={styles.moodText}>{mood}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <AutoSaveInput
+            initial={stop.memory?.text ?? ''}
+            onSave={(text) => updateMemory(stop.id, { text: text || undefined })}
+            placeholder="Nasıldı? Bir cümle yeter."
+            placeholderTextColor="#8A847C"
+            style={styles.note}
+            multiline
+            textAlignVertical="top"
+          />
+          <AttachmentList
+            files={stop.memory?.photos}
+            onAdd={(photos) => addMemoryPhotos(stop.id, photos)}
+            onRemove={(photo) => removeMemoryPhoto(stop.id, photo)}
+            photosOnly
+          />
+        </>
+      )}
 
       {/* Sadece kendi eklenen yerde: adı, adresi, konumu */}
       {stop.custom && (
@@ -279,6 +324,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 8,
   },
+  moods: { flexDirection: 'row', gap: 10 },
+  mood: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EFE9E1',
+  },
+  moodOn: { backgroundColor: '#F4E3E5', borderWidth: 2, borderColor: RED },
+  moodText: { fontSize: 26 },
   // Tek satırlık yazı kutusu (yerin adı, adresi)
   field: {
     minHeight: 48,

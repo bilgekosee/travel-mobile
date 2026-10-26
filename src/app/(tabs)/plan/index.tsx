@@ -26,6 +26,7 @@ import {
   daysBetween,
   formatDateKey,
   fromDateKey,
+  hasMemory,
   orderedStops,
   removeDay,
   removeStop,
@@ -103,6 +104,8 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
 
       {/* Hazırlık kartı: gezi bitince artık gerekmiyor */}
       {today <= days[days.length - 1].date && <ChecklistCard />}
+      {/* Gezi defteri: bir yer gezildikten sonra çıkar */}
+      {days.some((day) => day.stops.some((s) => s.done)) && <JournalCard days={days} />}
 
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.departure', android: 'flight_takeoff' } }}>
         <FlightRow leg="outbound" />
@@ -155,6 +158,24 @@ function ChecklistCard() {
         <Text style={styles.checklistCount}>
           {done}/{items.length}
         </Text>
+        <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} tintColor="#8A847C" />
+      </Pressable>
+    </Link>
+  );
+}
+
+// "Gezi defteri · 4 anı ›": anıların toplandığı sayfaya giden kart
+function JournalCard({ days }: { days: TripDay[] }) {
+  const count = days.flatMap((day) => day.stops).filter(hasMemory).length;
+  return (
+    <Link href="/plan/journal" asChild>
+      <Pressable
+        style={({ pressed }) => [styles.checklist, pressed && styles.stopPressed]}
+        accessibilityRole="button"
+        accessibilityLabel={`Gezi defteri, ${count} anı`}>
+        <SymbolView name={{ ios: 'book.closed.fill', android: 'auto_stories' }} size={20} tintColor={RED} />
+        <Text style={styles.checklistText}>Gezi defteri</Text>
+        <Text style={styles.checklistCount}>{count > 0 ? `${count} anı` : 'Anı ekle'}</Text>
         <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} tintColor="#8A847C" />
       </Pressable>
     </Link>
