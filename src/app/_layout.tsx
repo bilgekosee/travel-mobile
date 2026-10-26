@@ -59,6 +59,8 @@ export default function RootLayout() {
         <Stack.Screen name="flight" options={{ ...SHEET_OPTIONS, ...SHEET_DONE_OPTIONS, title: 'Uçuş' }} />
         {/* Haritadan konum seçme: tam ekran (yarım sayfada harita kaydırmak sayfayı kapatmaya çalışıyordu) */}
         <Stack.Screen name="pick-location" options={{ presentation: 'fullScreenModal', headerShown: false }} />
+        {/* Taksiciye göster: tam ekran, beyaz kart */}
+        <Stack.Screen name="show-driver" options={{ presentation: 'fullScreenModal', headerShown: false }} />
         {/* Bilet/belge görüntüleyici: tam ekran, üst çubuğu kendisi çiziyor */}
         <Stack.Screen name="attachment" options={{ presentation: 'fullScreenModal', headerShown: false }} />
         {/* Kalınan yer: küçük bir form, içeriği kadar açılır */}

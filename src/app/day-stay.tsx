@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AttachmentList } from '@/components/attachment-list';
+import { ShowDriverButton } from '@/components/show-driver-button';
 import { addStayFiles, formatDateKey, removeStayFile, setDayStay, type TripDay, useTrip } from '@/hooks/use-trip';
 
 const RED = '#C8102E';
@@ -25,18 +26,25 @@ export default function DayStayScreen() {
     );
   }
   // Diğer günlerdeki oteller (her biri bir kez)
-  // "s is string": TypeScript'e "bu süzgeçten geçenler kesin metin" diyoruz, undefined elendi
-  const suggestions = [...new Set(days.map((d) => d.stay).filter((s): s is string => !!s && s !== day.stay))];
+  // Diğer günlerdeki oteller, adresleriyle birlikte (her ad bir kez). Map: aynı ad ikinci kez gelirse üstüne yazar.
+  const suggestions = [
+    ...new Map(
+      days.filter((d) => d.stay && d.stay !== day.stay).map((d) => [d.stay!, { name: d.stay!, address: d.stayAddress }]),
+    ).values(),
+  ];
   return <StayForm day={day} suggestions={suggestions} />;
 }
 
+type Suggestion = { name: string; address?: string };
+
 // Ayrı bileşen: useState'in başlangıç değeri günün oteli olsun (gün bulunduktan sonra)
-function StayForm({ day, suggestions }: { day: TripDay; suggestions: string[] }) {
+function StayForm({ day, suggestions }: { day: TripDay; suggestions: Suggestion[] }) {
   // Henüz kaydedilmemiş metin. Aşağı kaydırıp kapatınca kaybolur = vazgeçmek.
   const [text, setText] = useState(day.stay ?? '');
+  const [address, setAddress] = useState(day.stayAddress ?? '');
 
-  function save(value: string) {
-    setDayStay(day.id, value);
+  function save(name: string, addr: string) {
+    setDayStay(day.id, name, addr);
     Haptics.selectionAsync();
     router.back();
   }
@@ -56,9 +64,23 @@ function StayForm({ day, suggestions }: { day: TripDay; suggestions: string[] })
           style={styles.input}
           autoFocus // Sayfa açılınca klavye hemen gelsin: buraya yazmak için gelindi
           returnKeyType="done"
-          onSubmitEditing={() => save(text)} // Klavyedeki "Bitti" de kaydeder
+          onSubmitEditing={() => save(text, address)} // Klavyedeki "Bitti" de kaydeder
         />
       </View>
+      <View style={styles.inputRow}>
+        <SymbolView name={{ ios: 'mappin.and.ellipse', android: 'place' }} size={18} tintColor="#6E6860" />
+        <TextInput
+          value={address}
+          onChangeText={setAddress}
+          placeholder="Adres (rezervasyondaki Japonca adres)"
+          placeholderTextColor="#8A847C"
+          style={styles.input}
+          returnKeyType="done"
+          onSubmitEditing={() => save(text, address)}
+        />
+      </View>
+      {/* Otele dönerken: Japonca adres yoksa en azından otelin adı */}
+      <ShowDriverButton text={address || text} name={text} />
 
       {/* Rezervasyon belgesi: Kaydet'i beklemez, eklenince hemen kaydedilir */}
       <Text style={styles.sectionTitle}>Rezervasyon</Text>
@@ -72,22 +94,26 @@ function StayForm({ day, suggestions }: { day: TripDay; suggestions: string[] })
         <>
           <Text style={styles.sectionTitle}>Diğer günlerden</Text>
           {suggestions.map((s) => (
-            <Pressable key={s} onPress={() => save(s)} style={styles.suggestion} accessibilityRole="button">
+            <Pressable
+              key={s.name}
+              onPress={() => save(s.name, s.address ?? '')}
+              style={styles.suggestion}
+              accessibilityRole="button">
               <SymbolView name={{ ios: 'arrow.uturn.left', android: 'replay' }} size={15} tintColor={RED} />
               <Text style={styles.suggestionText} numberOfLines={1}>
-                {s}
+                {s.name}
               </Text>
             </Pressable>
           ))}
         </>
       )}
 
-      <Pressable style={styles.button} onPress={() => save(text)} accessibilityRole="button">
+      <Pressable style={styles.button} onPress={() => save(text, address)} accessibilityRole="button">
         <Text style={styles.buttonText}>Kaydet</Text>
       </Pressable>
       {/* Kayıtlı bir otel varsa silmek için: metni elle silip kaydetmekten daha açık */}
       {day.stay && (
-        <Pressable style={styles.remove} onPress={() => save('')} accessibilityRole="button">
+        <Pressable style={styles.remove} onPress={() => save('', '')} accessibilityRole="button">
           <Text style={styles.removeText}>Kalınan yeri kaldır</Text>
         </Pressable>
       )}

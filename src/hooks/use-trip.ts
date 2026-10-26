@@ -29,8 +29,15 @@ export type TripStop = {
   files?: Attachment[]; // Bilet, QR kod, rezervasyon belgesi
 };
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
-// stay: o gece kalınan yer (otel adı), stayFiles: otel rezervasyonu gibi belgeler
-export type TripDay = { id: string; date: string; stops: TripStop[]; stay?: string; stayFiles?: Attachment[] };
+// stay: o gece kalınan yer (otel adı), stayAddress: adresi (taksiciye göstermek için), stayFiles: rezervasyon belgeleri
+export type TripDay = {
+  id: string;
+  date: string;
+  stops: TripStop[];
+  stay?: string;
+  stayAddress?: string;
+  stayFiles?: Attachment[];
+};
 
 const STORAGE_KEY = 'trip';
 
@@ -142,9 +149,10 @@ export function setDayDate(dayId: string, date: string) {
   mapDay(dayId, (day) => ({ ...day, date }));
 }
 
-// Boş metin = otel bilgisini sil
-export function setDayStay(dayId: string, stay: string) {
-  mapDay(dayId, (day) => ({ ...day, stay: stay.trim() || undefined }));
+// Boş metin = otel bilgisini sil (ad silinince adres de gider)
+export function setDayStay(dayId: string, stay: string, address = '') {
+  const name = stay.trim() || undefined;
+  mapDay(dayId, (day) => ({ ...day, stay: name, stayAddress: (name && address.trim()) || undefined }));
 }
 
 export function addStop(dayId: string, slot: DaySlot, itemId: string) {

@@ -9,6 +9,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 
 import { AttachmentList } from '@/components/attachment-list';
 import { AutoSaveInput } from '@/components/auto-save-input';
+import { ShowDriverButton } from '@/components/show-driver-button';
 import { SlotChip } from '@/components/slot-chip';
 import { StopTimePicker } from '@/components/stop-time-picker';
 import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
@@ -204,6 +205,8 @@ export default function StopScreen() {
       <StopTimePicker stopId={stop.id} time={stop.time} slot={stop.slot} />
 
       <View style={styles.actions}>
+        {/* Adres (kendi yerinde) ya da Japonca ad (uygulamadaki yerde): hangisi varsa */}
+        <ShowDriverButton text={place.address || place.japaneseName} name={place.name} />
         {item && (
           <Pressable onPress={openItem} style={styles.action} accessibilityRole="link">
             <SymbolView
