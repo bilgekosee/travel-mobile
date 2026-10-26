@@ -5,6 +5,7 @@ import 'expo-sqlite/localStorage/install';
 import { useSyncExternalStore } from 'react';
 
 import { type Attachment, deleteAttachmentFiles } from '@/data/attachments';
+import { type ChecklistItem, DEFAULT_CHECKLIST } from '@/data/checklist-defaults';
 
 // Hepsi serbest metin: "TK 52", "13:45", "İstanbul (IST)". Saat dilimi farkları, aktarmalar… kullanıcı nasıl isterse.
 export type Flight = {
@@ -18,7 +19,12 @@ export type Flight = {
 export type FlightLeg = 'outbound' | 'return'; // Gidiş / dönüş
 
 // tryPer100Yen: 100 yen kaç TL (kullanıcı girer; internetsiz çalışsın diye kur çekmiyoruz)
-export type TripInfo = { flights: Record<FlightLeg, Flight>; tryPer100Yen?: number };
+// checklist: hazırlık listesi. Hiç dokunulmadıysa yok → hazır maddeler gösterilir; ilk değişiklikte kaydedilir.
+export type TripInfo = {
+  flights: Record<FlightLeg, Flight>;
+  tryPer100Yen?: number;
+  checklist?: ChecklistItem[];
+};
 
 const STORAGE_KEY = 'trip-info';
 const EMPTY: TripInfo = { flights: { outbound: {}, return: {} } };
@@ -64,6 +70,28 @@ export function removeFlightFile(leg: FlightLeg, file: Attachment) {
 
 export function setExchangeRate(tryPer100Yen: number | undefined) {
   update({ ...info, tryPer100Yen });
+}
+
+// Hazırlık listesi: kayıtlı liste ya da (hiç dokunulmadıysa) hazır maddeler
+export function checklistOf(tripInfo: TripInfo) {
+  return tripInfo.checklist ?? DEFAULT_CHECKLIST;
+}
+
+function mapChecklist(change: (items: ChecklistItem[]) => ChecklistItem[]) {
+  update({ ...info, checklist: change(checklistOf(info)) });
+}
+
+export function toggleChecklistItem(id: string) {
+  mapChecklist((items) => items.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
+}
+
+export function addChecklistItem(text: string) {
+  const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  mapChecklist((items) => [...items, { id, text: text.trim() }]);
+}
+
+export function removeChecklistItem(id: string) {
+  mapChecklist((items) => items.filter((item) => item.id !== id));
 }
 
 // --- Hook ---

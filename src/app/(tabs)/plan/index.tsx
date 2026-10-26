@@ -13,6 +13,7 @@ import { DAY_THEME } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
 import {
+  checklistOf,
   type FlightLeg,
   flightSummary,
   formatTry,
@@ -100,6 +101,9 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
         )}
       </View>
 
+      {/* Hazırlık kartı: gezi bitince artık gerekmiyor */}
+      {today <= days[days.length - 1].date && <ChecklistCard />}
+
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.departure', android: 'flight_takeoff' } }}>
         <FlightRow leg="outbound" />
       </TripRouteRow>
@@ -127,6 +131,33 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
         <FlightRow leg="return" />
       </TripRouteRow>
     </>
+  );
+}
+
+// "Hazırlık · 5/12 ›": hazırlık listesine giden kart. Hepsi tamamsa yeşil değil, sadece ✓ ikonu değişir.
+function ChecklistCard() {
+  const items = checklistOf(useTripInfo());
+  const done = items.filter((i) => i.done).length;
+  const complete = items.length > 0 && done === items.length;
+
+  return (
+    <Link href="/plan/checklist" asChild>
+      <Pressable
+        style={({ pressed }) => [styles.checklist, pressed && styles.stopPressed]}
+        accessibilityRole="button"
+        accessibilityLabel={`Hazırlık listesi, ${done}/${items.length} hazır`}>
+        <SymbolView
+          name={complete ? { ios: 'checkmark.circle.fill', android: 'check_circle' } : { ios: 'checklist', android: 'checklist' }}
+          size={20}
+          tintColor={RED}
+        />
+        <Text style={styles.checklistText}>Hazırlık</Text>
+        <Text style={styles.checklistCount}>
+          {done}/{items.length}
+        </Text>
+        <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} tintColor="#8A847C" />
+      </Pressable>
+    </Link>
   );
 }
 
@@ -454,6 +485,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4E3E5',
   },
   statusText: { fontSize: 14, fontWeight: '600', color: RED },
+  checklist: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 52,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    marginBottom: 18,
+  },
+  checklistText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
+  checklistCount: { fontSize: 15, color: '#6B6B6B', fontVariant: ['tabular-nums'] },
   endpoint: { fontSize: 17, fontWeight: '700', color: '#1A1A1A', marginTop: 4 },
   flight: { alignSelf: 'stretch', gap: 2 },
   flightSummary: { fontSize: 15, color: '#4A4A4A', flexShrink: 1 },
