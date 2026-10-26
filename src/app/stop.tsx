@@ -9,18 +9,15 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 
 import { AttachmentList } from '@/components/attachment-list';
 import { AutoSaveInput } from '@/components/auto-save-input';
-import { ReminderPicker } from '@/components/reminder-picker';
 import { ShowDriverButton } from '@/components/show-driver-button';
-import { SlotChip } from '@/components/slot-chip';
-import { StopTimePicker } from '@/components/stop-time-picker';
-import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
+import { StopWhenCard } from '@/components/stop-when-card';
+import type { DaySlot } from '@/constants/day-slots';
 import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
 import {
   addMemoryPhotos,
   addStopFiles,
-  fromDateKey,
   MOODS,
   moveStop,
   removeMemoryPhoto,
@@ -224,32 +221,8 @@ export default function StopScreen() {
       />
 
       <Text style={styles.sectionTitle}>Ne zaman</Text>
-      {/* Günler yan yana; çoksa yatay kaydırılır. Başka bir güne dokunmak durağı oraya taşır. */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayChips}>
-        {days.map((d, i) => {
-          const selected = d.id === day.id;
-          return (
-            <Pressable
-              key={d.id}
-              onPress={() => move(d.id, stop.slot)}
-              style={[styles.dayChip, selected && styles.dayChipOn]}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}>
-              <Text style={[styles.dayChipTitle, selected && styles.dayChipTextOn]}>{i + 1}. gün</Text>
-              <Text style={[styles.dayChipDate, selected && styles.dayChipTextOn]}>
-                {fromDateKey(d.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-      <View style={styles.slots}>
-        {DAY_SLOTS.map((s) => (
-          <SlotChip key={s} slot={s} selected={s === stop.slot} onPress={() => move(day.id, s)} />
-        ))}
-      </View>
-      <StopTimePicker stopId={stop.id} time={stop.time} slot={stop.slot} />
-      {stop.time && <ReminderPicker stopId={stop.id} value={stop.remindBefore} />}
+      {/* Gün, dilim, saat, hatırlatma: tek kartta, her biri bir satır */}
+      <StopWhenCard stop={stop} day={day} days={days} onMove={move} />
 
       <View style={styles.actions}>
         {/* Adres (kendi yerinde) ya da Japonca ad (uygulamadaki yerde): hangisi varsa */}
@@ -354,21 +327,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: '#1A1A1A',
   },
-  dayChips: { gap: 8 },
-  dayChip: {
-    minWidth: 64,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: '#EFE9E1',
-    alignItems: 'center',
-  },
-  dayChipOn: { backgroundColor: RED },
-  dayChipTitle: { fontSize: 14, fontWeight: '700', color: '#1A1A1A' },
-  dayChipDate: { fontSize: 12, color: '#6B6B6B', marginTop: 1 },
-  dayChipTextOn: { color: '#FFFFFF' },
-  slots: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-
   actions: { marginTop: 12, gap: 2 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48 },
   actionText: { fontSize: 16, fontWeight: '600', color: RED },
