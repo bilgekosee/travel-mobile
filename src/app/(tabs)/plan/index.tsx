@@ -278,6 +278,10 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
   // ⋯ menüsü: seyrek yapılan işlemler burada, ekranı kalabalıklaştırmasın
   function openMenu() {
     Alert.alert(`${number}. gün`, undefined, [
+      // Sıralama ancak iki ya da daha fazla yer varsa anlamlı
+      ...(day.stops.length > 1
+        ? [{ text: 'Sırala', onPress: () => router.push({ pathname: '/day-order', params: { day: day.id } }) }]
+        : []),
       { text: 'Tarihi değiştir', onPress: () => router.push({ pathname: '/pick-date', params: { day: day.id } }) },
       { text: 'Günü sil', style: 'destructive', onPress: remove },
       { text: 'Vazgeç', style: 'cancel' },

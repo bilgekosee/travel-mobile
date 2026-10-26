@@ -88,12 +88,11 @@ export function daysBetween(from: string, to: string) {
   return Math.round((fromDateKey(to).getTime() - fromDateKey(from).getTime()) / 86_400_000);
 }
 
-// Günün durakları Sabah → Öğle → Akşam sırasıyla. Dilim içinde saati olanlar saat sırasıyla önde,
-// saatsizler arkada (eklenme sırasıyla). "~" rakamlardan sonra sıralanır: saatsizler hep sona düşer.
+// Günün durakları Sabah → Öğle → Akşam sırasıyla; dilim içinde dizideki sıra korunur.
+// Dizideki sıra tek doğru kaynak: kullanıcı sürükleyerek sıralayabiliyor, saat verilince durak saatine göre
+// yerleştiriliyor (setStopTime). Burada yeniden sıralasaydık sürüklenen durak eski yerine geri zıplardı.
 export function orderedStops(day: TripDay) {
-  return DAY_SLOTS.flatMap((slot) =>
-    day.stops.filter((s) => s.slot === slot).sort((a, b) => (a.time ?? '~').localeCompare(b.time ?? '~')),
-  );
+  return DAY_SLOTS.flatMap((slot) => day.stops.filter((s) => s.slot === slot));
 }
 
 // Kısa, büyük ihtimalle benzersiz bir id: zaman damgası + rastgele 4 karakter
@@ -223,12 +222,41 @@ export function toggleStopDone(stopId: string) {
 
 // Saat ver ya da sil (undefined). Saat girilince durak o saatin dilimine geçer (10:00 → Sabah).
 // Saat silinince hatırlatma da kapanır: saatsiz durağa hatırlatma kurulamaz.
+// Saat verilince durak saatine göre yerleşir: aynı dilimde daha geç saatli ya da saatsiz ilk durağın önüne.
 export function setStopTime(stopId: string, time: string | undefined) {
-  mapStop(stopId, (stop) => ({
-    ...stop,
-    time,
-    slot: time ? slotForTime(time) : stop.slot,
-    remindBefore: time ? stop.remindBefore : undefined,
+  update(
+    days.map((day) => {
+      const stop = day.stops.find((s) => s.id === stopId);
+      if (!stop) return day;
+      const changed: TripStop = {
+        ...stop,
+        time,
+        slot: time ? slotForTime(time) : stop.slot,
+        remindBefore: time ? stop.remindBefore : undefined,
+      };
+      if (!time) return { ...day, stops: day.stops.map((s) => (s.id === stopId ? changed : s)) };
+
+      const others = day.stops.filter((s) => s.id !== stopId);
+      const index = others.findIndex((s) => s.slot === changed.slot && (!s.time || s.time > time));
+      // Öyle bir durak yoksa: dilimin son durağının arkasına (o da yoksa sona)
+      const lastInSlot = others.map((s) => s.slot).lastIndexOf(changed.slot);
+      const at = index >= 0 ? index : lastInSlot + 1 || others.length;
+      return { ...day, stops: [...others.slice(0, at), changed, ...others.slice(at)] };
+    }),
+  );
+}
+
+// Sıralama sayfasından: günün yeni sırası ve her durağın (belki değişen) dilimi.
+// Dilimi değişen durağın saati yeni dilimle çelişiyorsa silinir (taşımadaki kural).
+export function reorderStops(dayId: string, order: { id: string; slot: DaySlot }[]) {
+  mapDay(dayId, (day) => ({
+    ...day,
+    stops: order.flatMap(({ id, slot }) => {
+      const stop = day.stops.find((s) => s.id === id);
+      if (!stop) return [];
+      const time = stop.time && slotForTime(stop.time) === slot ? stop.time : undefined;
+      return [{ ...stop, slot, time, remindBefore: time ? stop.remindBefore : undefined }];
+    }),
   }));
 }
 
