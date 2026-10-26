@@ -3,7 +3,7 @@
 // Sık yapılan iş tek dokunuş: sağdaki daire "gittim". Gerisi (not, taşıma, çıkarma) durağa dokununca açılan sayfada.
 import * as Haptics from 'expo-haptics';
 import { Link, router, Stack } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { useRef } from 'react';
 import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
@@ -84,6 +84,8 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
   const today = todayKey();
   const status = tripStatus(days, today);
   const spent = totalYen(days);
+  const showChecklist = today <= days[days.length - 1].date;
+  const showJournal = days.some((day) => day.stops.some((s) => s.done));
 
   return (
     <>
@@ -102,10 +104,13 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
         )}
       </View>
 
-      {/* Hazırlık kartı: gezi bitince artık gerekmiyor */}
-      {today <= days[days.length - 1].date && <ChecklistCard />}
-      {/* Gezi defteri: bir yer gezildikten sonra çıkar */}
-      {days.some((day) => day.stops.some((s) => s.done)) && <JournalCard days={days} />}
+      {/* Kısayol kutucukları yan yana. Hazırlık: gezi bitince gerekmiyor. Defter: bir yer gezildikten sonra çıkar. */}
+      {(showChecklist || showJournal) && (
+        <View style={styles.tiles}>
+          {showChecklist && <ChecklistTile />}
+          {showJournal && <JournalTile days={days} />}
+        </View>
+      )}
 
       <TripRouteRow marker={{ kind: 'icon', icon: { ios: 'airplane.departure', android: 'flight_takeoff' } }}>
         <FlightRow leg="outbound" />
@@ -137,48 +142,72 @@ function Trip({ days, onTodayLayout }: { days: TripDay[]; onTodayLayout: (y: num
   );
 }
 
-// "Hazırlık · 5/12 ›": hazırlık listesine giden kart. Hepsi tamamsa yeşil değil, sadece ✓ ikonu değişir.
-function ChecklistCard() {
-  const items = checklistOf(useTripInfo());
-  const done = items.filter((i) => i.done).length;
-  const complete = items.length > 0 && done === items.length;
-
+// Kısayol kutucuğu: renkli daire içinde ikon, başlık, altında durum (ve isteğe bağlı ilerleme çubuğu).
+// Link asChild yerine Pressable + router.push: Link, Pressable'ın fonksiyon biçimindeki style'ını aktarmıyordu,
+// kutucuk stilsiz kalıyordu (zemin, yan yana dizilim gidiyordu).
+function Tile({
+  icon,
+  title,
+  subtitle,
+  progress,
+  onPress,
+}: {
+  icon: SymbolViewProps['name'];
+  title: string;
+  subtitle: string;
+  progress?: number; // 0–1 arası; verilirse altta ince çubuk
+  onPress: () => void;
+}) {
   return (
-    <Link href="/plan/checklist" asChild>
-      <Pressable
-        style={({ pressed }) => [styles.checklist, pressed && styles.stopPressed]}
-        accessibilityRole="button"
-        accessibilityLabel={`Hazırlık listesi, ${done}/${items.length} hazır`}>
-        <SymbolView
-          name={complete ? { ios: 'checkmark.circle.fill', android: 'check_circle' } : { ios: 'checklist', android: 'checklist' }}
-          size={20}
-          tintColor={RED}
-        />
-        <Text style={styles.checklistText}>Hazırlık</Text>
-        <Text style={styles.checklistCount}>
-          {done}/{items.length}
-        </Text>
-        <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} tintColor="#8A847C" />
-      </Pressable>
-    </Link>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.tile, pressed && styles.stopPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}, ${subtitle}`}>
+      <View style={styles.tileIcon}>
+        <SymbolView name={icon} size={18} tintColor={RED} />
+      </View>
+      <Text style={styles.tileTitle} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={styles.tileSubtitle} numberOfLines={1}>
+        {subtitle}
+      </Text>
+      {progress !== undefined && (
+        <View style={styles.tileTrack}>
+          <View style={[styles.tileFill, { width: `${Math.round(progress * 100)}%` }]} />
+        </View>
+      )}
+    </Pressable>
   );
 }
 
-// "Gezi defteri · 4 anı ›": anıların toplandığı sayfaya giden kart
-function JournalCard({ days }: { days: TripDay[] }) {
+// Hazırlık listesi: kaç madde hazır + ilerleme çubuğu. Hepsi tamamsa ikon ✓ olur.
+function ChecklistTile() {
+  const items = checklistOf(useTripInfo());
+  const done = items.filter((i) => i.done).length;
+  const complete = items.length > 0 && done === items.length;
+  return (
+    <Tile
+      icon={complete ? { ios: 'checkmark.circle.fill', android: 'check_circle' } : { ios: 'checklist', android: 'checklist' }}
+      title="Hazırlık"
+      subtitle={complete ? 'Hepsi hazır' : `${done}/${items.length} hazır`}
+      progress={items.length ? done / items.length : 0}
+      onPress={() => router.push('/plan/checklist')}
+    />
+  );
+}
+
+// Gezi defteri: kaç anı var; yoksa davet
+function JournalTile({ days }: { days: TripDay[] }) {
   const count = days.flatMap((day) => day.stops).filter(hasMemory).length;
   return (
-    <Link href="/plan/journal" asChild>
-      <Pressable
-        style={({ pressed }) => [styles.checklist, pressed && styles.stopPressed]}
-        accessibilityRole="button"
-        accessibilityLabel={`Gezi defteri, ${count} anı`}>
-        <SymbolView name={{ ios: 'book.closed.fill', android: 'auto_stories' }} size={20} tintColor={RED} />
-        <Text style={styles.checklistText}>Gezi defteri</Text>
-        <Text style={styles.checklistCount}>{count > 0 ? `${count} anı` : 'Anı ekle'}</Text>
-        <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} tintColor="#8A847C" />
-      </Pressable>
-    </Link>
+    <Tile
+      icon={{ ios: 'book.closed.fill', android: 'auto_stories' }}
+      title="Gezi defteri"
+      subtitle={count > 0 ? `${count} anı` : 'Anı ekle'}
+      onPress={() => router.push('/plan/journal')}
+    />
   );
 }
 
@@ -189,22 +218,22 @@ function FlightRow({ leg }: { leg: FlightLeg }) {
   const label = leg === 'outbound' ? 'Kalkış' : 'Dönüş';
 
   return (
-    <Link href={{ pathname: '/flight', params: { leg } }} asChild>
-      <Pressable
-        style={({ pressed }) => [styles.flight, pressed && styles.stopPressed]}
-        accessibilityRole="button"
-        accessibilityLabel={summary ? `${label}: ${summary}` : `${label}: uçuş bilgisi ekle`}>
-        <Text style={styles.endpoint}>{label}</Text>
-        <View style={styles.stopNameRow}>
-          <Text style={summary ? styles.flightSummary : styles.addStopText} numberOfLines={1}>
-            {summary || 'Uçuş bilgisi ekle'}
-          </Text>
-          {(flight.files?.length ?? 0) > 0 && (
-            <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
-          )}
-        </View>
-      </Pressable>
-    </Link>
+    // Link asChild değil: fonksiyon biçimindeki style'ı aktarmıyor (bkz. Tile)
+    <Pressable
+      onPress={() => router.push({ pathname: '/flight', params: { leg } })}
+      style={({ pressed }) => [styles.flight, pressed && styles.stopPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={summary ? `${label}: ${summary}` : `${label}: uçuş bilgisi ekle`}>
+      <Text style={styles.endpoint}>{label}</Text>
+      <View style={styles.stopNameRow}>
+        <Text style={summary ? styles.flightSummary : styles.addStopText} numberOfLines={1}>
+          {summary || 'Uçuş bilgisi ekle'}
+        </Text>
+        {(flight.files?.length ?? 0) > 0 && (
+          <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
+        )}
+      </View>
+    </Pressable>
   );
 }
 
@@ -510,19 +539,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4E3E5',
   },
   statusText: { fontSize: 14, fontWeight: '600', color: RED },
-  checklist: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 52,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+  // Kısayol kutucukları: yan yana, eşit genişlikte (tek kutucuk varsa satırın yarısında kalmasın diye flex: 1)
+  tiles: { flexDirection: 'row', gap: 10, marginBottom: 18 },
+  tile: {
+    flex: 1,
+    gap: 2,
+    padding: 14,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
     boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-    marginBottom: 18,
   },
-  checklistText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
-  checklistCount: { fontSize: 15, color: '#6B6B6B', fontVariant: ['tabular-nums'] },
+  tileIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F4E3E5', // Açık kırmızı daire: durum hapıyla aynı ton
+    marginBottom: 8,
+  },
+  tileTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A1A' },
+  tileSubtitle: { fontSize: 14, color: '#6B6B6B', fontVariant: ['tabular-nums'] },
+  tileTrack: { height: 4, borderRadius: 2, backgroundColor: '#EFE9E1', overflow: 'hidden', marginTop: 8 },
+  tileFill: { height: '100%', backgroundColor: RED },
   endpoint: { fontSize: 17, fontWeight: '700', color: '#1A1A1A', marginTop: 4 },
   flight: { alignSelf: 'stretch', gap: 2 },
   flightSummary: { fontSize: 15, color: '#4A4A4A', flexShrink: 1 },
