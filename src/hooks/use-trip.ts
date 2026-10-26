@@ -1,0 +1,186 @@
+// Gezi planı: günler (tarihleriyle) ve her günün sabah/öğle/akşam durakları. Telefona kaydedilir.
+// Birden çok ekran (Planım, "Plana ekle" sayfası, yer sayfaları) aynı veriyi görür; biri değiştirince hepsi güncellenir.
+
+// Webdeki localStorage'ın mobil karşılığını etkinleştirir (arkada küçük bir SQLite veritabanına yazar).
+// localStorage'a ilk erişimden önce yüklensin diye onu kullanan dosyanın en üstünde.
+import 'expo-sqlite/localStorage/install';
+
+import { useSyncExternalStore } from 'react';
+
+import { DAY_SLOTS, type DaySlot } from '@/constants/day-slots';
+
+// Bir durak: kendi id'si + haritadaki biçimde yer id'si ("place-sensoji", "restaurant-…", "shop-…") + günün hangi dilimi.
+// Kendi id'si şart: durak başka güne/dilime taşınabiliyor, "gün + dilim + yer" üçlüsü değişse de aynı durak kalmalı.
+// done/note sonradan eklendi; "?" sayesinde eski kayıtlar da bu tipe uyuyor.
+export type TripStop = { id: string; itemId: string; slot: DaySlot; done?: boolean; note?: string };
+// Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
+// stay: o gece kalınan yer (otel adı)
+export type TripDay = { id: string; date: string; stops: TripStop[]; stay?: string };
+
+const STORAGE_KEY = 'trip';
+
+// --- Tarih yardımcıları ---
+// Date → "2027-04-15" (telefonun yerel günü; toISOString UTC'ye çevirip günü kaydırabilirdi)
+export function toDateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// "2027-04-15" → Date (öğlen 12'de: saat dilimi farkı günü değiştiremesin)
+export function fromDateKey(key: string) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d, 12);
+}
+
+// "2027-04-15" → "15 Nisan Perşembe". Intl tarih biçimlendirme, webdeki gibi mobilde de çalışıyor.
+export function formatDateKey(key: string) {
+  return fromDateKey(key).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+}
+
+function nextDateKey(key: string) {
+  const date = fromDateKey(key);
+  date.setDate(date.getDate() + 1);
+  return toDateKey(date);
+}
+
+// Bugünün anahtarı: "bugün" vurgusu, geri sayım ve gezi durumu bunu temel alır
+export function todayKey() {
+  return toDateKey(new Date());
+}
+
+// İki tarih arasındaki gün farkı ("2027-04-15" → "2027-04-18" = 3). Öğlen saatleri arasında ölçüp yuvarlıyoruz:
+// yaz saati geçişinde bir gün 23 ya da 25 saat sürebiliyor.
+export function daysBetween(from: string, to: string) {
+  return Math.round((fromDateKey(to).getTime() - fromDateKey(from).getTime()) / 86_400_000);
+}
+
+// Günün durakları Sabah → Öğle → Akşam sırasıyla; aynı dilim içinde eklenme sırası korunur
+export function orderedStops(day: TripDay) {
+  return DAY_SLOTS.flatMap((slot) => day.stops.filter((s) => s.slot === slot));
+}
+
+// Kısa, büyük ihtimalle benzersiz bir id: zaman damgası + rastgele 4 karakter
+function newId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+// --- React'in dışında duran küçük bir "store" ---
+function load(): TripDay[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const parsed: TripDay[] = saved ? JSON.parse(saved) : [];
+    // Eski kayıtlarda durakların id'si yok: yüklerken veriyoruz (küçük bir "migration")
+    return parsed.map((day) => ({ ...day, stops: day.stops.map((s) => (s.id ? s : { ...s, id: newId() })) }));
+  } catch {
+    return []; // Kayıt bozulduysa uygulama çökmesin, boş planla başlasın
+  }
+}
+
+let days: TripDay[] = load();
+const listeners = new Set<() => void>();
+
+// Her değişiklik buradan geçer: günleri tarihe göre sırala, kaydet, abonelere haber ver.
+// Yeni bir dizi veriyoruz (eskisini değiştirmek yerine): React değişikliği ancak böyle fark eder.
+function update(next: TripDay[]) {
+  days = [...next].sort((a, b) => a.date.localeCompare(b.date));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+  listeners.forEach((listener) => listener());
+}
+
+function mapDay(dayId: string, change: (day: TripDay) => TripDay) {
+  update(days.map((day) => (day.id === dayId ? change(day) : day)));
+}
+
+// --- İşlemler ---
+// Tarih verilmezse: son günün ertesi günü, plan boşsa bugün. Çoğu zaman tarih seçmeye gerek kalmaz.
+export function addDay(date?: string) {
+  let key = date ?? (days.length > 0 ? nextDateKey(days[days.length - 1].date) : toDateKey(new Date()));
+  while (days.some((day) => day.date === key)) key = nextDateKey(key); // Aynı tarihte iki gün olmasın
+  const id = newId();
+  update([...days, { id, date: key, stops: [] }]);
+  return id;
+}
+
+export function removeDay(dayId: string) {
+  update(days.filter((day) => day.id !== dayId));
+}
+
+export function setDayDate(dayId: string, date: string) {
+  mapDay(dayId, (day) => ({ ...day, date }));
+}
+
+// Boş metin = otel bilgisini sil
+export function setDayStay(dayId: string, stay: string) {
+  mapDay(dayId, (day) => ({ ...day, stay: stay.trim() || undefined }));
+}
+
+export function addStop(dayId: string, slot: DaySlot, itemId: string) {
+  mapDay(dayId, (day) =>
+    day.stops.some((s) => s.slot === slot && s.itemId === itemId)
+      ? day // Aynı yer aynı dilimde zaten varsa tekrar ekleme
+      : { ...day, stops: [...day.stops, { id: newId(), slot, itemId }] },
+  );
+}
+
+export function removeStop(stopId: string) {
+  update(days.map((day) => ({ ...day, stops: day.stops.filter((s) => s.id !== stopId) })));
+}
+
+// Durağın hangi günde olduğunu bilmeden onu değiştirir
+function mapStop(stopId: string, change: (stop: TripStop) => TripStop) {
+  update(days.map((day) => ({ ...day, stops: day.stops.map((s) => (s.id === stopId ? change(s) : s)) })));
+}
+
+// Gittim / gitmedim
+export function toggleStopDone(stopId: string) {
+  mapStop(stopId, (stop) => ({ ...stop, done: !stop.done }));
+}
+
+export function setStopNote(stopId: string, note: string) {
+  mapStop(stopId, (stop) => ({ ...stop, note: note || undefined }));
+}
+
+// Durağı başka bir güne ve/veya dilime taşır (notu ve "gittim" işareti de onunla gider).
+// Hedefte aynı yer aynı dilimde zaten varsa taşımaz, false döner.
+export function moveStop(stopId: string, toDayId: string, slot: DaySlot) {
+  const stop = days.flatMap((day) => day.stops).find((s) => s.id === stopId);
+  const target = days.find((day) => day.id === toDayId);
+  if (!stop || !target) return false;
+  if (target.stops.some((s) => s.id !== stopId && s.itemId === stop.itemId && s.slot === slot)) return false;
+
+  update(
+    days.map((day) => {
+      const stops = day.stops.filter((s) => s.id !== stopId); // Önce olduğu yerden çıkar…
+      return day.id === toDayId ? { ...day, stops: [...stops, { ...stop, slot }] } : { ...day, stops }; // …hedefin sonuna ekle
+    }),
+  );
+  return true;
+}
+
+// --- Hook'lar ---
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener); // Bileşen ekrandan kalkınca aboneliği bırak
+}
+
+// useSyncExternalStore: React'in dışındaki bir veriyi bileşenlere bağlar (webdeki React ile aynı)
+export function useTrip() {
+  return useSyncExternalStore(subscribe, () => days);
+}
+
+// Tek bir durak ve içinde bulunduğu gün (durak sayfası için). Durak taşınınca da bulunur: id değişmiyor.
+export function useStop(stopId: string) {
+  const days = useTrip();
+  for (const day of days) {
+    const stop = day.stops.find((s) => s.id === stopId);
+    if (stop) return { day, stop };
+  }
+  return null;
+}
+
+// Bu yer planın herhangi bir gününde var mı? ("Plana ekle" düğmesi "Planda" olarak görünsün diye)
+export function useIsInPlan(itemId: string) {
+  return useTrip().some((day) => day.stops.some((s) => s.itemId === itemId));
+}

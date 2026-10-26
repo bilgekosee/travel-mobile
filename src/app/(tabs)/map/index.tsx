@@ -2,12 +2,14 @@
 import { GlassView } from 'expo-glass-effect';
 import { Link, router, Stack, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/chip';
+import { AddToPlanButton } from '@/components/add-to-plan-button';
 import { ItemBadge } from '@/components/item-badge';
 import { PlacesMap } from '@/components/places-map';
+import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
 import { MAP_KINDS } from '@/constants/map-kinds';
 import { MAP_ITEMS, type MapItem } from '@/data/map-items';
@@ -23,13 +25,6 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 // Sekme çubuğu içeriğin üstünde yüzüyor; kart onun altında kalmasın diye bu kadar yukarıda durur.
 const TAB_BAR_HEIGHT = 60;
-
-// Telefonun kendi harita uygulamasında yol tarifini açan adres
-function directionsUrl({ latitude, longitude }: MapItem['coordinates']) {
-  return Platform.OS === 'ios'
-    ? `https://maps.apple.com/?daddr=${latitude},${longitude}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-}
 
 export default function MapScreen() {
   const [filter, setFilter] = useState<Filter>('all');
@@ -101,7 +96,11 @@ export default function MapScreen() {
           <Text style={[styles.label, { color: MAP_KINDS[selected.kind].color }]}>
             {selected.label.toLocaleUpperCase('tr')} · {selected.city}
           </Text>
-          <Text style={styles.name}>{selected.name}</Text>
+          {/* Ad solda, "Plana ekle" sağda. flex: 1 → uzun ad alt satıra sarılsın, düğmeyi itmesin */}
+          <View style={styles.nameRow}>
+            <Text style={[styles.name, styles.nameText]}>{selected.name}</Text>
+            <AddToPlanButton id={selected.id} name={selected.name} />
+          </View>
           <Text style={styles.japanese}>{selected.japaneseName}</Text>
           <Text style={styles.summary}>{selected.summary}</Text>
 
@@ -178,6 +177,8 @@ const styles = StyleSheet.create({
   cardSolid: { backgroundColor: '#FAF7F2', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' },
   label: { fontSize: 12, fontWeight: '700', letterSpacing: 1 }, // renk MAP_KINDS'tan gelir
   name: { fontSize: 24, ...serifText, color: '#1A1A1A' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  nameText: { flex: 1 },
   japanese: { fontSize: 14, color: '#6B6B6B' },
   summary: { fontSize: 15, lineHeight: 21, color: '#4A4A4A', marginTop: 4 },
   detailTitle: {

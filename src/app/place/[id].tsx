@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedRef, useScrollOffset } from 'react-native-reanimated';
 
 import { Section, TipList } from '@/components/city-guide';
+import { AddToPlanButton } from '@/components/add-to-plan-button';
 import { PhotoCredit } from '@/components/photo-credit';
 import { serifText } from '@/constants/fonts';
 import { getPlace } from '@/data/places';
@@ -59,6 +60,10 @@ export default function PlaceDetailScreen() {
           <Badge icon={{ ios: 'tag', android: 'sell' }} text={place.category} />
           <Badge icon={{ ios: 'clock', android: 'schedule' }} text={place.duration} />
         </View>
+
+        {/* Ad, şehir ve süreyi okuduktan hemen sonra "gideyim mi?" kararı verilir: düğme tam burada.
+            Id haritadaki biçimde ("place-" ön ekli): haritadan eklenen yer burada da "planda" görünür. */}
+        <AddToPlanButton id={`place-${place.id}`} name={place.name} variant="button" />
 
         <Text style={styles.description}>{place.description}</Text>
 

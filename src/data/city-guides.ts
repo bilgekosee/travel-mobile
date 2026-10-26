@@ -1,6 +1,7 @@
 // Şehir sayfasındaki rehber bölümlerinin verisi (hızlı bilgi, rota, yemek, pratik bilgi).
 // Not: Ulaşım süreleri ve kurallar yaklaşık/genel bilgidir; gerçek bir uygulamada resmi kaynaklardan doğrulanmalı.
 
+import type { DaySlot } from '@/constants/day-slots';
 import type { Photo } from '@/data/places';
 
 export type Food = {
@@ -12,7 +13,7 @@ export type Food = {
 };
 
 export type DayPlanStep = {
-  time: 'Sabah' | 'Öğle' | 'Akşam';
+  time: DaySlot; // 'Sabah' | 'Öğle' | 'Akşam' (Planım ile ortak)
   title: string;
   placeId?: string; // Uygulamada detay sayfası varsa oraya bağlanır
 };

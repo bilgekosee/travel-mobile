@@ -17,6 +17,8 @@ import { ItemBadge } from '@/components/item-badge';
 import { LightBulb } from '@/components/light-bulb';
 import { PhotoCredit } from '@/components/photo-credit';
 import { RailDivider } from '@/components/rail-divider';
+// Günün her anının rengi ve ikonu; Planım da aynısını kullanıyor
+import { DAY_THEME } from '@/constants/day-slots';
 import { serifText } from '@/constants/fonts';
 import { CityGuide, Food } from '@/data/city-guides';
 import type { Shop } from '@/data/shops';
@@ -58,15 +60,6 @@ export function QuickFacts({ guide }: { guide: CityGuide }) {
     </View>
   );
 }
-
-// Günün her anının kendi rengi ve ikonu: şafak turuncusu, öğle güneşi altını, gece indigosu.
-// Renkler beyaz kart üstünde 12pt etiket için WCAG 4.5:1 kontrastı geçecek koyulukta seçildi.
-type DayTime = CityGuide['dayPlan'][number]['time'];
-const DAY_THEME: Record<DayTime, { color: string; icon: SymbolViewProps['name'] }> = {
-  Sabah: { color: '#C2410C', icon: { ios: 'sunrise.fill', android: 'wb_twilight' } }, // 5.18:1
-  Öğle: { color: '#A16207', icon: { ios: 'sun.max.fill', android: 'light_mode' } }, // 4.92:1
-  Akşam: { color: '#4338CA', icon: { ios: 'moon.stars.fill', android: 'dark_mode' } }, // 7.90:1
-};
 
 // Sabah → Öğle → Akşam zaman çizelgesi. Uygulamada detayı olan duraklar tıklanabilir.
 export function DayPlan({ steps }: { steps: CityGuide['dayPlan'] }) {
@@ -204,13 +197,22 @@ export function ShopList({ shops }: { shops: Shop[] }) {
               <SymbolView name={{ ios: 'tram.fill', android: 'train' }} size={15} tintColor={RED} style={styles.factIcon} />
               <Text style={[styles.body, styles.tipText]}>{shop.access}</Text>
             </View>
-            {/* Harita sekmesini açar, haritayı bu dükkana yaklaştırır ve kartını gösterir */}
-            <Link href={{ pathname: '/map', params: { focus: `shop-${shop.id}` } }} asChild>
-              <Pressable style={styles.mapLink} hitSlop={12} accessibilityRole="link">
-                <SymbolView name={{ ios: 'map', android: 'map' }} size={15} tintColor={RED} />
-                <Text style={styles.mapLinkText}>Haritada göster</Text>
-              </Pressable>
-            </Link>
+            <View style={styles.shopLinks}>
+              {/* Harita sekmesini açar, haritayı bu dükkana yaklaştırır ve kartını gösterir */}
+              <Link href={{ pathname: '/map', params: { focus: `shop-${shop.id}` } }} asChild>
+                <Pressable style={styles.mapLink} hitSlop={12} accessibilityRole="link">
+                  <SymbolView name={{ ios: 'map', android: 'map' }} size={15} tintColor={RED} />
+                  <Text style={styles.mapLinkText}>Haritada göster</Text>
+                </Pressable>
+              </Link>
+              {/* Alttan "Plana ekle" sayfasını açar: gün ve dilim seçilir */}
+              <Link href={{ pathname: '/add-to-plan', params: { item: `shop-${shop.id}` } }} asChild>
+                <Pressable style={styles.mapLink} hitSlop={12} accessibilityRole="button">
+                  <SymbolView name={{ ios: 'calendar.badge.plus', android: 'calendar_add_on' }} size={15} tintColor={RED} />
+                  <Text style={styles.mapLinkText}>Plana ekle</Text>
+                </Pressable>
+              </Link>
+            </View>
           </View>
         </Fragment>
       ))}
@@ -289,6 +291,7 @@ const styles = StyleSheet.create({
 
   shop: { gap: 8 },
   access: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  shopLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 }, // Sığmazsa (büyük yazı) alt satıra geçer
   mapLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }, // alignSelf: sadece yazı kadar yer kaplasın
   mapLinkText: { fontSize: 15, fontWeight: '600', color: RED },
 

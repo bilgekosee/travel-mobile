@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AddToPlanButton } from '@/components/add-to-plan-button';
 import { Place } from '@/data/places';
 
 export function PlaceCard({ place }: { place: Place }) {
@@ -31,6 +32,10 @@ export function PlaceCard({ place }: { place: Place }) {
                 {place.summary}
               </Text>
             </View>
+            {/* Karta dokununca detay açılır; ikona dokununca doğrudan "Plana ekle".
+                İçteki düğme dokunmayı önce yakalar, kartın kendisi tetiklenmez. */}
+            <AddToPlanButton id={`place-${place.id}`} name={place.name} />
+
           </View>
         )}
       </Pressable>

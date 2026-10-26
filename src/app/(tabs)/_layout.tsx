@@ -18,7 +18,7 @@ export default function TabsLayout() {
 
       <NativeTabs.Trigger name="plan">
         <NativeTabs.Trigger.Label>Planım</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'heart', selected: 'heart.fill' }} md="favorite" />
+        <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="guide">
