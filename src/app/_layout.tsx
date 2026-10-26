@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { AnimatedIntro } from '@/components/animated-intro';
 import { SHEET_DONE_OPTIONS } from '@/components/sheet-done-button';
 import { stackScreenOptions } from '@/constants/navigation';
+import { useReminderSync } from '@/hooks/use-reminder-sync';
 
 // Native splash kendiliğinden kapanmasın; AnimatedIntro hazır olunca biz kapatacağız.
 // Bileşenin dışında çağrılır ki uygulama yüklenir yüklenmez çalışsın.
@@ -32,6 +33,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [showIntro, setShowIntro] = useState(true);
+  useReminderSync(); // Plan değişince durak hatırlatmalarını yeniden kur
   // Anahtar adı ("CormorantGaramond_700Bold") stillerde fontFamily olarak kullanılacak ad olur.
   const [fontsLoaded, fontError] = useFonts({ CormorantGaramond_700Bold });
 

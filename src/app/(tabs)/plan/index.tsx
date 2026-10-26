@@ -347,6 +347,10 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
             {(stop.files?.length ?? 0) > 0 && (
               <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
             )}
+            {/* Hatırlatma kurulu (gidilmişse artık çalmayacağı için göstermiyoruz) */}
+            {!!stop.time && !!stop.remindBefore && !stop.done && (
+              <SymbolView name={{ ios: 'bell.fill', android: 'notifications_active' }} size={12} tintColor="#8A847C" />
+            )}
           </View>
           {/* note ? … : null — "note && …" boş metinde '' döndürür; React Native onu Text dışında çizemez, hata verir */}
           {note ? (

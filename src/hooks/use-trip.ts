@@ -26,6 +26,7 @@ export type TripStop = {
   note?: string;
   custom?: CustomPlace;
   time?: string; // "10:30": bilet, rezervasyon gibi belli saati olan duraklar
+  remindBefore?: number; // Saatinden kaç dakika önce bildirim gelsin (yoksa hatırlatma kapalı)
   files?: Attachment[]; // Bilet, QR kod, rezervasyon belgesi
 };
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
@@ -203,8 +204,19 @@ export function toggleStopDone(stopId: string) {
 }
 
 // Saat ver ya da sil (undefined). Saat girilince durak o saatin dilimine geçer (10:00 → Sabah).
+// Saat silinince hatırlatma da kapanır: saatsiz durağa hatırlatma kurulamaz.
 export function setStopTime(stopId: string, time: string | undefined) {
-  mapStop(stopId, (stop) => ({ ...stop, time, slot: time ? slotForTime(time) : stop.slot }));
+  mapStop(stopId, (stop) => ({
+    ...stop,
+    time,
+    slot: time ? slotForTime(time) : stop.slot,
+    remindBefore: time ? stop.remindBefore : undefined,
+  }));
+}
+
+// Kaç dakika önce hatırlatılsın; undefined = kapalı
+export function setStopReminder(stopId: string, minutes: number | undefined) {
+  mapStop(stopId, (stop) => ({ ...stop, remindBefore: minutes }));
 }
 
 export function setStopNote(stopId: string, note: string) {

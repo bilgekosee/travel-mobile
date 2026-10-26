@@ -9,6 +9,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 
 import { AttachmentList } from '@/components/attachment-list';
 import { AutoSaveInput } from '@/components/auto-save-input';
+import { ReminderPicker } from '@/components/reminder-picker';
 import { ShowDriverButton } from '@/components/show-driver-button';
 import { SlotChip } from '@/components/slot-chip';
 import { StopTimePicker } from '@/components/stop-time-picker';
@@ -203,6 +204,7 @@ export default function StopScreen() {
         ))}
       </View>
       <StopTimePicker stopId={stop.id} time={stop.time} slot={stop.slot} />
+      {stop.time && <ReminderPicker stopId={stop.id} value={stop.remindBefore} />}
 
       <View style={styles.actions}>
         {/* Adres (kendi yerinde) ya da Japonca ad (uygulamadaki yerde): hangisi varsa */}
