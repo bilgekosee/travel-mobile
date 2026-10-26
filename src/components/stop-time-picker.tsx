@@ -7,6 +7,7 @@ import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { CompactTimePicker } from '@/components/compact-time-picker';
 import { type DaySlot, SLOT_DEFAULT_TIME } from '@/constants/day-slots';
 import { setStopTime } from '@/hooks/use-trip';
 
@@ -55,14 +56,7 @@ export function StopTimePicker({ stopId, time, slot }: Props) {
     <View style={styles.row}>
       <SymbolView name={{ ios: 'clock.fill', android: 'schedule' }} size={20} tintColor={RED} />
       {Platform.OS === 'ios' ? (
-        <DateTimePicker
-          value={toDate(time)}
-          onValueChange={(_, date) => change(toTime(date))}
-          mode="time"
-          display="compact" // Küçük "10:30" düğmesi; dokununca çark açılır
-          locale="tr_TR" // 24 saat biçimi
-          accentColor={RED}
-        />
+        <CompactTimePicker value={toDate(time)} onChange={(date) => change(toTime(date))} color={RED} />
       ) : (
         <Pressable onPress={() => setAndroidOpen(true)} accessibilityRole="button" accessibilityHint="Saati değiştir">
           <Text style={styles.time}>{time}</Text>
