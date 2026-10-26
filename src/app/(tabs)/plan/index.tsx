@@ -248,6 +248,9 @@ function DayBlock({ day, number, isToday }: { day: TripDay; number: number; isTo
           <Text style={day.stay ? styles.stayText : styles.addStopText} numberOfLines={1}>
             {day.stay ?? 'Kalınan yer'}
           </Text>
+          {(day.stayFiles?.length ?? 0) > 0 && (
+            <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
+          )}
         </Pressable>
       </Link>
     </View>
@@ -304,9 +307,15 @@ function StopRow({ day, stop, isNext }: { day: TripDay; stop: TripStop; isNext: 
         <SymbolView name={theme.icon} size={15} tintColor={theme.color} style={stop.done && styles.faded} />
         {stop.time && <Text style={[styles.stopTime, stop.done && styles.stopNameDone]}>{stop.time}</Text>}
         <View style={styles.stopText}>
-          <Text style={[styles.stopName, stop.done && styles.stopNameDone]} numberOfLines={1}>
-            {place.name}
-          </Text>
+          <View style={styles.stopNameRow}>
+            <Text style={[styles.stopName, stop.done && styles.stopNameDone]} numberOfLines={1}>
+              {place.name}
+            </Text>
+            {/* Belgesi var: bileti/QR'ı uygulamada, aramaya gerek yok */}
+            {(stop.files?.length ?? 0) > 0 && (
+              <SymbolView name={{ ios: 'paperclip', android: 'attach_file' }} size={13} tintColor="#8A847C" />
+            )}
+          </View>
           {/* note ? … : null — "note && …" boş metinde '' döndürür; React Native onu Text dışında çizemez, hata verir */}
           {note ? (
             <Text style={styles.stopNote} numberOfLines={1}>
@@ -388,7 +397,8 @@ const styles = StyleSheet.create({
   stopMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
   stopPressed: { opacity: 0.5 },
   stopText: { flex: 1 },
-  stopName: { fontSize: 16, color: '#1A1A1A' },
+  stopNameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  stopName: { fontSize: 16, color: '#1A1A1A', flexShrink: 1 }, // Uzun ad kısalsın, ataç hep görünsün
   // tabular-nums: rakamlar eşit genişlikte, alt alta saatler hizalı durur
   stopTime: { fontSize: 15, fontWeight: '600', color: '#1A1A1A', fontVariant: ['tabular-nums'] },
   stopNameDone: { color: '#9A948C' }, // Gidildi: soluk ama okunur (üstünü çizmiyoruz, ad hâlâ işe yarayabilir)

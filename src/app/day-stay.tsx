@@ -7,7 +7,8 @@ import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { formatDateKey, setDayStay, type TripDay, useTrip } from '@/hooks/use-trip';
+import { AttachmentList } from '@/components/attachment-list';
+import { addStayFiles, formatDateKey, removeStayFile, setDayStay, type TripDay, useTrip } from '@/hooks/use-trip';
 
 const RED = '#C8102E';
 
@@ -58,6 +59,14 @@ function StayForm({ day, suggestions }: { day: TripDay; suggestions: string[] })
           onSubmitEditing={() => save(text)} // Klavyedeki "Bitti" de kaydeder
         />
       </View>
+
+      {/* Rezervasyon belgesi: Kaydet'i beklemez, eklenince hemen kaydedilir */}
+      <Text style={styles.sectionTitle}>Rezervasyon</Text>
+      <AttachmentList
+        files={day.stayFiles}
+        onAdd={(files) => addStayFiles(day.id, files)}
+        onRemove={(file) => removeStayFile(day.id, file)}
+      />
 
       {suggestions.length > 0 && (
         <>

@@ -8,6 +8,7 @@ import 'expo-sqlite/localStorage/install';
 import { useSyncExternalStore } from 'react';
 
 import { DAY_SLOTS, type DaySlot, slotForTime } from '@/constants/day-slots';
+import { type Attachment, deleteAttachmentFiles } from '@/data/attachments';
 import type { Coordinates } from '@/data/places';
 
 // Uygulamanın listesinde olmayan, kullanıcının kendi eklediği yer (arkadaşın önerdiği izakaya gibi)
@@ -25,10 +26,11 @@ export type TripStop = {
   note?: string;
   custom?: CustomPlace;
   time?: string; // "10:30": bilet, rezervasyon gibi belli saati olan duraklar
+  files?: Attachment[]; // Bilet, QR kod, rezervasyon belgesi
 };
 // Tarih metin olarak "2027-04-15": localStorage sadece metin saklar; saat dilimi kaymasına da yol açmaz.
-// stay: o gece kalınan yer (otel adı)
-export type TripDay = { id: string; date: string; stops: TripStop[]; stay?: string };
+// stay: o gece kalınan yer (otel adı), stayFiles: otel rezervasyonu gibi belgeler
+export type TripDay = { id: string; date: string; stops: TripStop[]; stay?: string; stayFiles?: Attachment[] };
 
 const STORAGE_KEY = 'trip';
 
@@ -120,7 +122,20 @@ export function addDay(date?: string) {
 }
 
 export function removeDay(dayId: string) {
+  // Günle birlikte giden belgelerin dosyalarını da sil (otel belgesi + durakların belgeleri)
+  const day = days.find((d) => d.id === dayId);
+  deleteAttachmentFiles(day?.stayFiles);
+  day?.stops.forEach((s) => deleteAttachmentFiles(s.files));
   update(days.filter((day) => day.id !== dayId));
+}
+
+export function addStayFiles(dayId: string, files: Attachment[]) {
+  mapDay(dayId, (day) => ({ ...day, stayFiles: [...(day.stayFiles ?? []), ...files] }));
+}
+
+export function removeStayFile(dayId: string, file: Attachment) {
+  deleteAttachmentFiles([file]);
+  mapDay(dayId, (day) => ({ ...day, stayFiles: day.stayFiles?.filter((f) => f.id !== file.id) }));
 }
 
 export function setDayDate(dayId: string, date: string) {
@@ -156,7 +171,17 @@ export function updateCustomPlace(stopId: string, changes: Partial<CustomPlace>)
 }
 
 export function removeStop(stopId: string) {
+  deleteAttachmentFiles(days.flatMap((day) => day.stops).find((s) => s.id === stopId)?.files);
   update(days.map((day) => ({ ...day, stops: day.stops.filter((s) => s.id !== stopId) })));
+}
+
+export function addStopFiles(stopId: string, files: Attachment[]) {
+  mapStop(stopId, (stop) => ({ ...stop, files: [...(stop.files ?? []), ...files] }));
+}
+
+export function removeStopFile(stopId: string, file: Attachment) {
+  deleteAttachmentFiles([file]);
+  mapStop(stopId, (stop) => ({ ...stop, files: stop.files?.filter((f) => f.id !== file.id) }));
 }
 
 // Durağın hangi günde olduğunu bilmeden onu değiştirir

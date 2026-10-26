@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AttachmentList } from '@/components/attachment-list';
 import { AutoSaveInput } from '@/components/auto-save-input';
 import { SlotChip } from '@/components/slot-chip';
 import { StopTimePicker } from '@/components/stop-time-picker';
@@ -15,9 +16,11 @@ import { directionsUrl } from '@/constants/directions';
 import { serifText } from '@/constants/fonts';
 import { placeOf } from '@/data/plan-place';
 import {
+  addStopFiles,
   fromDateKey,
   moveStop,
   removeStop,
+  removeStopFile,
   setStopNote,
   toggleStopDone,
   updateCustomPlace,
@@ -67,7 +70,7 @@ export default function StopScreen() {
   }
 
   function confirmRemove() {
-    Alert.alert(place!.name, 'Plandan çıkarılsın mı? Notun da silinecek.', [
+    Alert.alert(place!.name, 'Plandan çıkarılsın mı? Notu ve belgeleri de silinecek.', [
       { text: 'Vazgeç', style: 'cancel' },
       {
         text: 'Plandan çıkar',
@@ -164,6 +167,13 @@ export default function StopScreen() {
         style={styles.note}
         multiline
         textAlignVertical="top" // Android: çok satırlı alanda yazı ortadan değil üstten başlasın
+      />
+
+      <Text style={styles.sectionTitle}>Biletler ve belgeler</Text>
+      <AttachmentList
+        files={stop.files}
+        onAdd={(files) => addStopFiles(stop.id, files)}
+        onRemove={(file) => removeStopFile(stop.id, file)}
       />
 
       <Text style={styles.sectionTitle}>Ne zaman</Text>
